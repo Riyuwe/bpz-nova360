@@ -18,3 +18,2802 @@
 
 <!-- Web App Manifest (inline data-URI) -->
 <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22NOVA360%20%E2%80%94%20Brain%20Performance%20Zone%22%2C%22short_name%22%3A%22NOVA360%22%2C%22description%22%3A%22Neuro%20Optimization%20Virtual%20Assistant%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22orientation%22%3A%22portrait%22%2C%22background_color%22%3A%22%23F4F6FB%22%2C%22theme_color%22%3A%22%236D28D9%22%2C%22categories%22%3A%5B%22health%22%2C%22fitness%22%2C%22lifestyle%22%5D%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%2520viewBox%3D'0%25200%2520512%2520512'%253E%253Crect%2520width%3D'512'%2520height%3D'512'%2520rx%3D'114'%2520fill%3D'%25236D28D9'%2F%253E%253Ctext%2520x%3D'256'%2520y%3D'340'%2520font-size%3D'280'%2520text-anchor%3D'middle'%2520fill%3D'white'%253E%25F0%259F%25A7%25A0%253C%2Ftext%253E%253C%2Fsvg%253E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%2C%22purpose%22%3A%22any%20maskable%22%7D%5D%7D">
+
+<!-- Android splash / safe-area support -->
+<style>
+  :root { --sat: env(safe-area-inset-top); --sab: env(safe-area-inset-bottom); --sal: env(safe-area-inset-left); --sar: env(safe-area-inset-right); }
+  body { padding-top: var(--sat, 0); padding-bottom: var(--sab, 0); padding-left: var(--sal, 0); padding-right: var(--sar, 0); }
+  .tabbar { padding-bottom: max(var(--sab, 0px), 8px); height: calc(var(--tab-h) + max(var(--sab, 0px), 0px)); }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ── Tokens ── */
+:root {
+  --bg: #F4F6FB;
+  --surface: #FFFFFF;
+  --surface2: #EEF1F8;
+  --border: #E2E6F0;
+  --accent: #6D28D9;
+  --accent-soft: #7C3AED;
+  --accent-muted: rgba(109,40,217,0.10);
+  --green: #059669;
+  --green-muted: rgba(5,150,105,0.12);
+  --amber: #D97706;
+  --amber-muted: rgba(217,119,6,0.10);
+  --blue: #2563EB;
+  --pink: #DB2777;
+  --indigo: #4F46E5;
+  --teal: #0D9488;
+  --text: #111827;
+  --text-2: #4B5563;
+  --text-3: #9CA3AF;
+  --tab-h: 68px;
+}
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { background: #DDE3F0; min-height: 100%; }
+body {
+  font-family: 'Manrope', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 24px 0;
+}
+
+/* ── Device Shell ── */
+.device {
+  width: 100%;
+  max-width: 430px;
+  min-height: calc(100vh - 48px);
+  background: var(--bg);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: 40px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.08), 0 40px 80px rgba(0,0,0,0.18);
+}
+@media (max-width: 480px) {
+  body { padding: 0; }
+  .device { border-radius: 0; min-height: 100vh; box-shadow: none; }
+}
+
+/* ── Screen ── */
+.screen {
+  display: none;
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: calc(var(--tab-h) + 8px);
+  scrollbar-width: none;
+}
+.screen::-webkit-scrollbar { display: none; }
+.screen.active { display: block; }
+
+/* ── Tab Bar ── */
+.tabbar {
+  position: sticky;
+  bottom: 0;
+  width: 100%;
+  height: var(--tab-h);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex;
+  z-index: 100;
+  flex-shrink: 0;
+}
+.tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  padding: 8px 4px 10px;
+  -webkit-tap-highlight-color: transparent;
+}
+.tab .tab-icon { font-size: 20px; line-height: 1; }
+.tab .tab-label { font-size: 9px; font-weight: 600; color: var(--text-3); letter-spacing: 0.3px; text-transform: uppercase; }
+.tab.active .tab-label { color: var(--accent-soft); }
+.tab.active .tab-dot {
+  width: 4px; height: 4px; border-radius: 2px;
+  background: var(--accent);
+  margin-top: 2px;
+}
+
+/* ── Section padding ── */
+.px { padding-left: 20px; padding-right: 20px; }
+.section-gap { padding: 20px; }
+
+/* ── Screen header ── */
+.screen-head { padding: 24px 20px 16px; }
+.screen-head h1 { font-family: 'Space Grotesk', sans-serif; font-size: 26px; font-weight: 700; }
+.screen-head p { font-size: 13px; color: var(--text-2); margin-top: 3px; }
+
+/* ── Cards ── */
+.card {
+  background: var(--surface);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+}
+.card-inner { padding: 18px; }
+
+/* ── Tags / Badges ── */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  border-radius: 6px; padding: 3px 8px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase;
+}
+.badge-accent { background: var(--accent-muted); color: var(--accent-soft); }
+.badge-green { background: var(--green-muted); color: var(--green); }
+.badge-amber { background: var(--amber-muted); color: var(--amber); }
+
+/* ── Zone chips ── */
+.zone { display: inline-block; border-radius: 5px; padding: 2px 7px; font-size: 10px; font-weight: 700; }
+.zone-excellent { background: rgba(16,185,129,0.18); color: var(--green); }
+.zone-good { background: rgba(59,130,246,0.18); color: var(--blue); }
+.zone-mindfulness { background: rgba(139,92,246,0.18); color: #A78BFA; }
+.zone-fair { background: rgba(245,158,11,0.18); color: var(--amber); }
+
+/* ═══════════════════════════════════
+   DASHBOARD
+═══════════════════════════════════ */
+.dash-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 28px 20px 16px;
+}
+.dash-greeting { font-size: 14px; color: var(--text-2); }
+.dash-name { font-family: 'Space Grotesk', sans-serif; font-size: 24px; font-weight: 700; margin-top: 2px; }
+.streak-chip {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 8px 14px; font-size: 12px; font-weight: 600; color: var(--amber);
+}
+
+.score-card {
+  margin: 0 20px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 22px;
+  display: flex; gap: 16px; align-items: center;
+  position: relative; overflow: hidden;
+}
+.score-card::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(124,58,237,0.08) 0%, transparent 60%);
+  pointer-events: none;
+}
+.score-left { flex: 1; }
+.score-label { font-size: 11px; font-weight: 600; color: var(--text-3); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 4px; }
+.score-number {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 80px; font-weight: 700;
+  color: var(--accent); line-height: 0.9;
+  letter-spacing: -4px;
+}
+.score-sub { font-size: 12px; color: var(--text-3); margin-top: 10px; }
+.score-ring {
+  width: 76px; height: 76px; border-radius: 50%;
+  border: 3px solid var(--green);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.score-ring-pct { font-family: 'Space Grotesk', sans-serif; font-size: 15px; font-weight: 700; color: var(--green); }
+.score-ring-lbl { font-size: 8px; font-weight: 600; color: var(--green); margin-top: 1px; }
+
+.section-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 12px; letter-spacing: 0.1px; }
+
+.metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0 20px 20px; }
+.metric-tile {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 14px 14px 12px;
+  border-top-width: 2px;
+}
+.metric-icon { font-size: 18px; margin-bottom: 8px; }
+.metric-value { font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 700; }
+.metric-label { font-size: 10px; font-weight: 600; color: var(--text-2); margin-top: 3px; letter-spacing: 0.2px; }
+
+/* HRV Chart */
+.chart-wrap { margin: 0 20px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px; }
+.chart-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.range-toggle { display: flex; background: var(--surface2); border-radius: 8px; padding: 2px; gap: 2px; border: 1px solid var(--border); }
+.range-btn {
+  border: none; background: transparent; color: var(--text-3);
+  font-size: 11px; font-weight: 700; padding: 5px 10px; border-radius: 6px; cursor: pointer;
+  font-family: 'Manrope', sans-serif;
+}
+.range-btn.active { background: var(--accent); color: #fff; }
+
+/* Pillars */
+.pillars { display: flex; flex-direction: column; gap: 10px; margin: 0 20px 24px; }
+.pillar-row {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 14px;
+}
+.pillar-icon { font-size: 20px; width: 28px; text-align: center; flex-shrink: 0; }
+.pillar-bar-wrap { flex: 1; background: var(--surface2); border-radius: 3px; height: 5px; overflow: hidden; }
+.pillar-bar { height: 100%; border-radius: 3px; }
+.pillar-lbl { font-size: 12px; color: var(--text-2); width: 64px; flex-shrink: 0; }
+.pillar-score { font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 700; width: 28px; text-align: right; flex-shrink: 0; }
+
+/* ═══════════════════════════════════
+   CHECK-IN
+═══════════════════════════════════ */
+.steps-indicator { display: flex; align-items: center; justify-content: center; gap: 0; margin: 0 20px 20px; }
+.step-dot {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--surface); border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: var(--text-3);
+  flex-shrink: 0;
+}
+.step-dot.done { background: var(--accent); border-color: var(--accent); color: #fff; }
+.step-dot.current { border-color: var(--accent); color: var(--accent-soft); }
+.step-line { flex: 1; height: 2px; background: var(--border); max-width: 36px; }
+.step-line.done { background: var(--accent); }
+.step-labels { display: flex; justify-content: space-around; margin: 4px 20px 20px; }
+.step-labels span { font-size: 10px; color: var(--text-3); }
+
+.rating-row { display: flex; gap: 7px; margin: 0 20px 20px; }
+.rating-btn {
+  flex: 1; background: var(--surface); border: 2px solid var(--border);
+  border-radius: 12px; padding: 10px 4px; display: flex; flex-direction: column;
+  align-items: center; gap: 5px; cursor: pointer; transition: border-color .15s;
+}
+.rating-btn:hover, .rating-btn.active { border-color: var(--accent); }
+.rating-btn .r-emoji { font-size: 22px; }
+.rating-btn .r-label { font-size: 8px; color: var(--text-3); text-align: center; }
+
+.form-label { font-size: 13px; font-weight: 600; color: var(--text); margin: 0 20px 8px; }
+.form-input {
+  display: block; width: calc(100% - 40px); margin: 0 20px 20px;
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 12px;
+  padding: 12px 14px; color: var(--text); font-family: 'Manrope', sans-serif; font-size: 13px;
+  resize: none; outline: none;
+}
+.form-input:focus { border-color: var(--accent); }
+
+.cat-list { display: flex; flex-direction: column; gap: 8px; margin: 0 20px 20px; }
+.cat-row {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 14px;
+}
+.cat-emoji { font-size: 18px; width: 26px; flex-shrink: 0; }
+.cat-name { font-size: 13px; color: var(--text); flex: 1; }
+.cat-btns { display: flex; gap: 5px; }
+.cat-num {
+  width: 26px; height: 26px; border-radius: 13px;
+  background: var(--surface2); border: none; color: var(--text-3);
+  font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Manrope', sans-serif;
+}
+.cat-num.active { background: var(--accent); color: #fff; }
+
+.btn-row { display: flex; gap: 10px; margin: 0 20px 24px; }
+.btn-primary {
+  flex: 1; background: var(--accent); color: #fff;
+  border: none; border-radius: 12px; padding: 15px;
+  font-family: 'Manrope', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer;
+}
+.btn-secondary {
+  flex: 1; background: var(--surface); color: var(--text-2);
+  border: 1px solid var(--border); border-radius: 12px; padding: 15px;
+  font-family: 'Manrope', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer;
+}
+.btn-green { background: var(--green); }
+
+.summary-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin: 0 20px 20px; }
+.summary-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); }
+.summary-row:last-child { border-bottom: none; }
+.summary-row span:first-child { font-size: 12px; color: var(--text-2); }
+.summary-row span:last-child { font-size: 12px; font-weight: 600; color: var(--accent-soft); }
+
+/* ═══════════════════════════════════
+   TRAIN
+═══════════════════════════════════ */
+.recommended-card {
+  margin: 0 20px 20px;
+  background: var(--surface); border: 1px solid rgba(124,58,237,0.3);
+  border-radius: 20px; padding: 20px; position: relative; overflow: hidden;
+}
+.recommended-card::after {
+  content: ''; position: absolute; top: -40px; right: -40px;
+  width: 140px; height: 140px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+.recommended-title { font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 700; margin: 10px 0 8px; }
+.recommended-desc { font-size: 13px; color: var(--text-2); line-height: 1.6; margin-bottom: 16px; }
+.stat-row { display: flex; justify-content: space-around; margin-bottom: 18px; }
+.stat-item { text-align: center; }
+.stat-value { font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 700; color: var(--accent-soft); }
+.stat-label { font-size: 10px; color: var(--text-3); margin-top: 2px; }
+.start-btn {
+  width: 100%; background: var(--accent); color: #fff; border: none; border-radius: 12px;
+  padding: 14px; font-family: 'Manrope', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer;
+}
+
+.session-card {
+  margin: 0 20px 10px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 16px; border-left-width: 3px;
+}
+.session-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.session-type { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text-3); }
+.session-title { font-family: 'Space Grotesk', sans-serif; font-size: 15px; font-weight: 600; margin-top: 2px; }
+.session-min { font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 700; color: var(--accent-soft); text-align: center; }
+.session-min-lbl { font-size: 9px; color: var(--text-3); text-align: center; }
+.session-desc { font-size: 12px; color: var(--text-2); line-height: 1.6; margin-bottom: 12px; }
+.session-btn {
+  width: 100%; border: none; border-radius: 8px; padding: 9px;
+  font-family: 'Manrope', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer;
+}
+
+/* Breathing Exercise */
+.breathing-screen {
+  display: none; position: absolute; inset: 0;
+  background: var(--surface); z-index: 200; flex-direction: column;
+  align-items: center; justify-content: center; padding: 32px;
+  padding-bottom: calc(var(--tab-h) + 32px);
+}
+.breathing-screen.show { display: flex; }
+.breathing-title { font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 700; text-align: center; margin-bottom: 4px; }
+.cycles-count { font-size: 13px; color: var(--text-2); margin-bottom: 48px; }
+
+.breath-ring-wrap { position: relative; width: 200px; height: 200px; display: flex; align-items: center; justify-content: center; margin-bottom: 48px; }
+.breath-ring-outer {
+  position: absolute; inset: 0; border-radius: 50%;
+  border: 3px solid var(--accent);
+  transition: transform 5s ease-in-out, border-color 0.5s;
+}
+.breath-ring-inner {
+  width: 170px; height: 170px; border-radius: 50%;
+  background: var(--accent-muted);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  transition: background 0.5s;
+}
+.breath-phase { font-size: 14px; font-weight: 600; color: var(--accent-soft); }
+.breath-count { font-family: 'Space Grotesk', sans-serif; font-size: 48px; font-weight: 700; color: var(--accent-soft); line-height: 1; }
+.breathing-tip { font-size: 13px; color: var(--text-2); text-align: center; line-height: 1.7; margin-bottom: 32px; max-width: 280px; }
+.end-btn {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 13px 32px; color: var(--text-2); font-family: 'Manrope', sans-serif;
+  font-size: 14px; font-weight: 600; cursor: pointer;
+}
+
+.connect-card { margin: 16px 20px 24px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 18px; }
+.connect-title { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+.connect-desc { font-size: 12px; color: var(--text-2); line-height: 1.6; margin-bottom: 14px; }
+.device-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.device-chip {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+  padding: 7px 12px; font-size: 12px; color: var(--text-2); cursor: pointer;
+}
+
+/* ═══════════════════════════════════
+   NUDGES
+═══════════════════════════════════ */
+.range-row { display: flex; margin: 0 20px 20px; background: var(--surface); border-radius: 12px; padding: 4px; gap: 2px; border: 1px solid var(--border); }
+.range-pill {
+  flex: 1; border: none; background: transparent; color: var(--text-3);
+  font-family: 'Manrope', sans-serif; font-size: 12px; font-weight: 600;
+  padding: 9px 6px; border-radius: 8px; cursor: pointer;
+}
+.range-pill.active { background: var(--accent); color: #fff; }
+
+.report-card { margin: 0 20px 20px; background: var(--surface); border: 1px solid rgba(124,58,237,0.25); border-radius: 16px; padding: 18px; }
+.report-hd { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.report-period { font-size: 11px; color: var(--text-3); }
+.report-greeting { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+.report-body { font-size: 12px; color: var(--text-2); line-height: 1.8; white-space: pre-line; }
+
+.nudge-card {
+  margin: 0 20px 10px;
+  border-radius: 14px; padding: 15px; border-left-width: 3px; border-left-style: solid;
+  background: var(--surface); border-top: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
+}
+.nudge-hd { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+.nudge-icon { font-size: 17px; }
+.nudge-name { flex: 1; font-size: 13px; font-weight: 700; }
+.nudge-body { font-size: 12px; color: var(--text-2); line-height: 1.7; }
+
+.cat-grid { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 20px 24px; }
+.cat-tile {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 10px; width: calc(33.33% - 6px);
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.cat-tile-icon { font-size: 22px; }
+.cat-tile-name { font-size: 10px; color: var(--text-2); }
+.cat-tile-trend { font-size: 10px; font-weight: 700; text-align: center; }
+
+/* ═══════════════════════════════════
+   HISTORY
+═══════════════════════════════════ */
+.summary-stats { display: flex; gap: 8px; margin: 0 20px 20px; }
+.stat-card { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 10px; text-align: center; }
+.stat-card-val { font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 700; }
+.stat-card-lbl { font-size: 10px; color: var(--text-2); margin-top: 3px; }
+
+.table-card { margin: 0 20px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+.table-head { display: flex; padding: 10px 14px; border-bottom: 1px solid var(--border); }
+.th { font-size: 10px; font-weight: 700; color: var(--text-3); letter-spacing: 0.5px; text-transform: uppercase; }
+.table-row { display: flex; align-items: center; padding: 12px 14px; border-bottom: 1px solid var(--border); }
+.table-row:last-child { border-bottom: none; }
+.col-day { flex: 1.5; }
+.day-n { font-size: 13px; font-weight: 600; }
+.day-d { font-size: 10px; color: var(--text-3); margin-top: 1px; }
+.col-num { flex: 0.8; text-align: center; font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 700; }
+.col-zone { flex: 1.2; text-align: right; }
+
+.pagination { display: flex; align-items: center; justify-content: space-between; margin: 0 20px 16px; }
+.page-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 9px 14px; font-family: 'Manrope', sans-serif; font-size: 12px; color: var(--text-2); cursor: pointer; }
+.page-btn:disabled { opacity: 0.4; cursor: default; }
+.page-info { font-size: 12px; color: var(--text-3); }
+
+.export-btn { display: block; width: calc(100% - 40px); margin: 0 20px 24px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; text-align: center; font-family: 'Manrope', sans-serif; font-size: 13px; font-weight: 600; color: var(--accent-soft); cursor: pointer; }
+
+/* ═══════════════════════════════════
+   PROFILE
+═══════════════════════════════════ */
+.profile-head { display: flex; flex-direction: column; align-items: center; padding: 32px 20px 24px; }
+.avatar {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), #5B21B6);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Space Grotesk', sans-serif; font-size: 28px; font-weight: 700; color: #fff;
+  margin-bottom: 14px;
+}
+.profile-name { font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 700; }
+.profile-school { font-size: 13px; color: var(--text-2); margin-top: 3px; }
+.points-badge { background: var(--accent-muted); border-radius: 20px; padding: 8px 16px; margin-top: 12px; font-size: 13px; font-weight: 600; color: var(--accent-soft); }
+
+.progress-card { margin: 0 20px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 18px; }
+.progress-lbl { font-size: 13px; font-weight: 700; margin-bottom: 14px; }
+.progress-track { background: var(--surface2); border-radius: 5px; height: 8px; overflow: hidden; margin-bottom: 8px; }
+.progress-fill { background: linear-gradient(90deg, var(--accent), var(--accent-soft)); height: 100%; border-radius: 5px; }
+.progress-labels { display: flex; justify-content: space-between; }
+.progress-labels span:first-child { font-size: 11px; color: var(--accent-soft); font-weight: 600; }
+.progress-labels span:last-child { font-size: 11px; color: var(--text-3); }
+
+.achievements-grid { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 20px 20px; }
+.ach-tile {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 13px 10px; width: calc(33.33% - 6px);
+  display: flex; flex-direction: column; align-items: center; gap: 5px; position: relative;
+}
+.ach-tile.locked { opacity: 0.5; }
+.ach-icon { font-size: 26px; }
+.ach-label { font-size: 9px; color: var(--text-2); text-align: center; }
+.ach-check { position: absolute; top: 6px; right: 8px; font-size: 10px; color: var(--green); font-weight: 700; }
+
+.settings-list { margin: 0 20px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+.setting-row {
+  display: flex; align-items: center; gap: 12px; padding: 15px 16px;
+  border-bottom: 1px solid var(--border); cursor: pointer;
+}
+.setting-row:last-child { border-bottom: none; }
+.setting-icon { font-size: 18px; width: 26px; flex-shrink: 0; }
+.setting-content { flex: 1; }
+.setting-name { font-size: 13px; font-weight: 500; }
+.setting-sub { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+.setting-chevron { font-size: 18px; color: var(--border); }
+
+.nova-footer { margin: 0 20px 24px; background: var(--surface); border: 1px solid rgba(124,58,237,0.2); border-radius: 16px; padding: 20px; text-align: center; }
+.nova-footer h3 { font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 700; color: var(--accent-soft); }
+.nova-footer p { font-size: 11px; color: var(--text-3); margin-top: 4px; }
+
+/* Spacer */
+.pb { height: 24px; }
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse-border {
+  0%, 100% {
+    border-color: var(--border);
+  }
+  50% {
+    border-color: var(--accent);
+  }
+}
+
+.connect-modal {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 300;
+  background: var(--surface);
+  flex-direction: column;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.connect-modal.show {
+  display: flex;
+}
+
+.connect-modal-head {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── Provider Search + Filter ── */
+.cmo-search-wrap { padding: 12px 16px 0; }
+.cmo-search-input {
+  width: 100%; padding: 10px 14px 10px 36px;
+  border: 1.5px solid var(--border); border-radius: 10px;
+  background: var(--surface2); font-family: inherit; font-size: 14px;
+  color: var(--text); outline: none; position: relative;
+}
+.cmo-search-wrap { position: relative; }
+.cmo-search-icon { position: absolute; left: 28px; top: 50%; transform: translateY(-50%); color: var(--text-3); pointer-events: none; }
+.cmo-cats { display: flex; gap: 6px; padding: 10px 16px 4px; overflow-x: auto; scrollbar-width: none; }
+.cmo-cats::-webkit-scrollbar { display: none; }
+.cmo-cat {
+  flex-shrink: 0; padding: 5px 12px; border-radius: 20px;
+  font-size: 12px; font-weight: 600; border: 1.5px solid var(--border);
+  background: var(--surface); color: var(--text-2); cursor: pointer;
+  transition: all 0.15s;
+}
+.cmo-cat.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* ── Provider Grid Tiles ── */
+.provider-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 10px; padding: 12px 16px;
+}
+.provider-tile {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 14px; padding: 12px 8px 10px;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s;
+  position: relative;
+}
+.provider-tile:hover { border-color: var(--accent); box-shadow: 0 2px 8px rgba(109,40,217,0.12); }
+.provider-tile.connected { border-color: var(--green); background: rgba(5,150,105,0.04); }
+.provider-tile.connecting { animation: pulse-border 1.4s ease-in-out infinite; }
+.pt-logo {
+  width: 44px; height: 44px; border-radius: 10px; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.pt-name { font-size: 11px; font-weight: 700; text-align: center; color: var(--text); line-height: 1.2; }
+.pt-connect {
+  font-size: 10px; font-weight: 700; padding: 4px 10px;
+  border-radius: 20px; border: none; cursor: pointer; transition: all 0.15s;
+}
+.pt-connect.off { background: var(--accent-muted); color: var(--accent); }
+.pt-connect.on  { background: var(--green-muted);  color: var(--green); }
+.pt-badge {
+  position: absolute; top: 6px; right: 6px;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--green); display: none;
+}
+.provider-tile.connected .pt-badge { display: block; }
+
+/* ── Legacy provider-card (kept for compat) ── */
+.provider-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 18px;
+  margin: 0 20px 12px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.provider-card.connecting { animation: pulse-border 1.4s ease-in-out infinite; }
+.provider-card.connected {
+  border-left: 3px solid var(--green); background: rgba(5,150,105,0.04);
+  border-radius: 16px 16px 0 0; margin-bottom: 0;
+}
+
+.provider-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.provider-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.provider-desc {
+  font-size: 12px;
+  color: var(--text-2);
+  line-height: 1.6;
+  margin-top: 4px;
+}
+
+.provider-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-top: 8px;
+}
+
+.provider-status::before {
+  content: '';
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+  transition: background 0.2s ease;
+}
+
+.connect-btn {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin-top: 14px;
+  background: var(--accent);
+  color: #fff;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.connect-btn:hover:not(:disabled):not(.connecting) {
+  background: var(--accent-soft);
+}
+
+.connect-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.connect-btn.connected {
+  background: rgba(5, 150, 105, 0.1);
+  color: var(--green);
+  border-color: rgba(5, 150, 105, 0.3);
+}
+
+.connect-btn.connected:hover {
+  background: rgba(5, 150, 105, 0.16);
+}
+
+.connect-btn.connecting {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.data-panel {
+  max-height: 0;
+  overflow: hidden;
+  padding: 0 14px;
+  background: var(--surface2);
+  border-radius: 0 0 12px 12px;
+  border: 1px solid transparent;
+  border-top: none;
+  margin: 0 20px;
+  transition: max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1),
+              padding 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.data-panel.open {
+  max-height: 400px;
+  padding: 14px;
+  margin-bottom: 12px;
+  border-color: var(--border);
+}
+
+.data-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--text-2);
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border);
+  font-variant-numeric: tabular-nums;
+}
+
+.data-row:last-child {
+  border-bottom: none;
+}
+
+.data-value {
+  font-family: 'Space Grotesk', ui-monospace, 'Courier New', monospace;
+  font-weight: 700;
+  color: var(--accent);
+  font-size: 15px;
+  flex-shrink: 0;
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.sync-time {
+  display: block;
+  font-size: 10px;
+  color: var(--text-3);
+  font-style: italic;
+  margin-top: 8px;
+}
+
+.connecting-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+.device-connect-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 18px;
+  background: transparent;
+  color: var(--accent);
+  border: 1.5px solid var(--accent);
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.device-connect-btn:hover {
+  background: var(--accent-muted);
+}
+
+.device-connect-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.device-connect-btn:active {
+  background: rgba(109, 40, 217, 0.15);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .provider-card.connecting {
+    animation: none;
+    border-color: var(--accent);
+  }
+
+  .connecting-spinner {
+    animation: none;
+    border-color: var(--border);
+    border-top-color: var(--accent);
+  }
+
+  .data-panel,
+  .connect-btn,
+  .device-connect-btn,
+  .provider-card {
+    transition: none;
+  }
+}
+
+.connect-modal-head {
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid var(--border);
+  gap: 8px;
+}
+
+.connect-modal-back {
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  flex-shrink: 0;
+  color: var(--text-2);
+}
+
+.connect-modal-title {
+  flex: 1;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.connect-modal-sub {
+  font-size: 12px;
+  color: var(--text-2);
+  text-align: center;
+  padding: 12px 24px 16px;
+  line-height: 1.5;
+  border-bottom: 1px solid var(--border);
+}
+
+.connect-modal { background: var(--bg); }
+.connect-modal > .connect-modal-head + * { /* sub already handled */ }
+.provider-card { box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+.connect-btn { font-size: 14px; letter-spacing: 0.2px; }
+</style>
+</head>
+<body>
+<div class="device">
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+     NOVA360 — Device Connection Modal
+     ═══════════════════════════════════════════════════════════════════ -->
+
+<div class="connect-modal connect-modal-overlay" id="connect-modal" hidden role="dialog" aria-modal="true" aria-labelledby="connect-modal-title">
+  <div class="connect-modal-backdrop" onclick="closeConnectModal()" aria-hidden="true"></div>
+  <div class="connect-modal-sheet">
+    <div class="cmo-handle" aria-hidden="true"></div>
+
+  <div class="connect-modal-head">
+  <div class="connect-modal-back" onclick="closeConnectModal()">&#8592;</div>
+  <div class="connect-modal-title">Connect Health Apps</div>
+  <div style="width:36px"></div>
+</div>
+<div class="connect-modal-sub">Sync real biometric data to power your personalised nudges</div>
+
+    <!-- Search + Category Filter -->
+    <div class="cmo-search-wrap">
+      <span class="cmo-search-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      </span>
+      <input class="cmo-search-input" id="cmo-search" type="search" placeholder="Search apps…" oninput="filterProviderTiles(this.value)" autocomplete="off">
+    </div>
+    <div class="cmo-cats" id="cmo-cats">
+      <button class="cmo-cat active" onclick="filterProviderCat('all',this)">All</button>
+      <button class="cmo-cat" onclick="filterProviderCat('wearable',this)">Wearables</button>
+      <button class="cmo-cat" onclick="filterProviderCat('sport',this)">Sports</button>
+      <button class="cmo-cat" onclick="filterProviderCat('nutrition',this)">Nutrition</button>
+      <button class="cmo-cat" onclick="filterProviderCat('sleep',this)">Sleep</button>
+      <button class="cmo-cat" onclick="filterProviderCat('health',this)">Health</button>
+    </div>
+
+    <!-- Provider Grid -->
+    <div class="provider-grid" id="provider-grid">
+      <!-- Wearables -->
+      <div class="provider-tile" id="tile-appleHealth" data-cat="wearable" data-name="apple health" onclick="toggleProvider('appleHealth')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#FF2D55"/><path d="M22 34C22 34 8 25 8 17a8 8 0 0 1 14-5.3A8 8 0 0 1 36 17c0 8-14 17-14 17z" fill="white"/></svg></div>
+        <div class="pt-name">Apple Health</div>
+        <button class="pt-connect off" id="ptbtn-appleHealth">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-garmin" data-cat="wearable" data-name="garmin" onclick="toggleProvider('garmin')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#004AAD"/><path d="M33 18a12 12 0 1 0 0 8H22" fill="none" stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="pt-name">Garmin</div>
+        <button class="pt-connect off" id="ptbtn-garmin">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-googleFit" data-cat="wearable" data-name="google fit" onclick="toggleProvider('googleFit')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#fff"/><path d="M22 10a8 8 0 1 0 0 16" fill="none" stroke="#EA4335" stroke-width="4"/><path d="M30 18h-8" stroke="#4285F4" stroke-width="4" stroke-linecap="round"/><path d="M22 26a8 8 0 0 0 8-8" fill="none" stroke="#34A853" stroke-width="4"/><circle cx="22" cy="34" r="5" fill="#FBBC05"/></svg></div>
+        <div class="pt-name">Google Fit</div>
+        <button class="pt-connect off" id="ptbtn-googleFit">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-fitbit" data-cat="wearable" data-name="fitbit" onclick="toggleProvider('fitbit')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#00B0B9"/><circle cx="16" cy="10" r="5" fill="white"/><circle cx="16" cy="22" r="3.5" fill="white"/><circle cx="16" cy="32" r="2" fill="white"/><circle cx="28" cy="15" r="2" fill="white"/><circle cx="28" cy="26" r="3.5" fill="white"/><circle cx="28" cy="37" r="5" fill="white"/></svg></div>
+        <div class="pt-name">Fitbit</div>
+        <button class="pt-connect off" id="ptbtn-fitbit">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-oura" data-cat="wearable sleep" data-name="oura ring" onclick="toggleProvider('oura')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#111"/><circle cx="22" cy="22" r="11" fill="none" stroke="white" stroke-width="5"/><circle cx="22" cy="11" r="3" fill="white"/></svg></div>
+        <div class="pt-name">Oura Ring</div>
+        <button class="pt-connect off" id="ptbtn-oura">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-withings" data-cat="wearable health" data-name="withings" onclick="toggleProvider('withings')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#00A0D0"/><text x="22" y="29" font-size="18" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">W</text></svg></div>
+        <div class="pt-name">Withings</div>
+        <button class="pt-connect off" id="ptbtn-withings">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-whoop" data-cat="wearable" data-name="whoop" onclick="toggleProvider('whoop')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#111"/><path d="M8 13l6 18 8-14 8 14 6-18" fill="none" stroke="white" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/></svg></div>
+        <div class="pt-name">WHOOP</div>
+        <button class="pt-connect off" id="ptbtn-whoop">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-samsungHealth" data-cat="wearable" data-name="samsung health" onclick="toggleProvider('samsungHealth')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#1428A0"/><text x="22" y="29" font-size="16" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">SH</text></svg></div>
+        <div class="pt-name">Samsung Health</div>
+        <button class="pt-connect off" id="ptbtn-samsungHealth">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-polar" data-cat="wearable sport" data-name="polar" onclick="toggleProvider('polar')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#D72638"/><text x="22" y="29" font-size="16" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">POLAR</text></svg></div>
+        <div class="pt-name">Polar</div>
+        <button class="pt-connect off" id="ptbtn-polar">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-suunto" data-cat="wearable sport" data-name="suunto" onclick="toggleProvider('suunto')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#EE3124"/><text x="22" y="29" font-size="13" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">SUUNTO</text></svg></div>
+        <div class="pt-name">Suunto</div>
+        <button class="pt-connect off" id="ptbtn-suunto">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-ultrahuman" data-cat="wearable" data-name="ultrahuman" onclick="toggleProvider('ultrahuman')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#111"/><text x="22" y="30" font-size="11" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">ULTRA</text></svg></div>
+        <div class="pt-name">Ultrahuman</div>
+        <button class="pt-connect off" id="ptbtn-ultrahuman">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-coros" data-cat="wearable sport" data-name="coros" onclick="toggleProvider('coros')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#222"/><text x="22" y="29" font-size="14" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">COROS</text></svg></div>
+        <div class="pt-name">COROS</div>
+        <button class="pt-connect off" id="ptbtn-coros">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-amazfit" data-cat="wearable" data-name="amazfit zepp" onclick="toggleProvider('amazfit')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#1A73E8"/><text x="22" y="29" font-size="11" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">amazfit</text></svg></div>
+        <div class="pt-name">Amazfit</div>
+        <button class="pt-connect off" id="ptbtn-amazfit">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-zepp" data-cat="wearable" data-name="zepp" onclick="toggleProvider('zepp')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#1A73E8"/><text x="22" y="29" font-size="14" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">ZEPP</text></svg></div>
+        <div class="pt-name">ZEPP</div>
+        <button class="pt-connect off" id="ptbtn-zepp">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-huawei" data-cat="wearable" data-name="huawei health" onclick="toggleProvider('huawei')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#CF0A2C"/><text x="22" y="29" font-size="11" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">HUAWEI</text></svg></div>
+        <div class="pt-name">Huawei Health</div>
+        <button class="pt-connect off" id="ptbtn-huawei">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-omron" data-cat="wearable health" data-name="omron" onclick="toggleProvider('omron')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#005BAA"/><text x="22" y="29" font-size="12" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">OMRON</text></svg></div>
+        <div class="pt-name">Omron</div>
+        <button class="pt-connect off" id="ptbtn-omron">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-biostrap" data-cat="wearable health" data-name="biostrap" onclick="toggleProvider('biostrap')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#3D5AFE"/><text x="22" y="29" font-size="11" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">BIO</text></svg></div>
+        <div class="pt-name">Biostrap</div>
+        <button class="pt-connect off" id="ptbtn-biostrap">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-inBody" data-cat="wearable health" data-name="inbody" onclick="toggleProvider('inBody')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#005BAA"/><text x="22" y="29" font-size="11" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">InBody</text></svg></div>
+        <div class="pt-name">InBody</div>
+        <button class="pt-connect off" id="ptbtn-inBody">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-wahoo" data-cat="sport wearable" data-name="wahoo" onclick="toggleProvider('wahoo')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#E61E25"/><text x="22" y="29" font-size="11" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">wahoo</text></svg></div>
+        <div class="pt-name">Wahoo</div>
+        <button class="pt-connect off" id="ptbtn-wahoo">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-iFit" data-cat="sport wearable" data-name="ifit" onclick="toggleProvider('iFit')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#FF6600"/><text x="22" y="29" font-size="14" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">iFIT</text></svg></div>
+        <div class="pt-name">iFIT</div>
+        <button class="pt-connect off" id="ptbtn-iFit">Connect</button>
+      </div>
+      <!-- Sports -->
+      <div class="provider-tile" id="tile-strava" data-cat="sport" data-name="strava" onclick="toggleProvider('strava')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#FC4C02"/><path d="M18 32l6-12 6 12m-12 0l-6-12" fill="none" stroke="white" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/></svg></div>
+        <div class="pt-name">Strava</div>
+        <button class="pt-connect off" id="ptbtn-strava">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-runkeeper" data-cat="sport" data-name="runkeeper" onclick="toggleProvider('runkeeper')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#3B86C9"/><text x="22" y="29" font-size="10" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">RK</text></svg></div>
+        <div class="pt-name">Runkeeper</div>
+        <button class="pt-connect off" id="ptbtn-runkeeper">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-peloton" data-cat="sport" data-name="peloton" onclick="toggleProvider('peloton')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#000"/><text x="22" y="29" font-size="10" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">PELO</text></svg></div>
+        <div class="pt-name">Peloton</div>
+        <button class="pt-connect off" id="ptbtn-peloton">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-zwift" data-cat="sport" data-name="zwift" onclick="toggleProvider('zwift')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#F47920"/><text x="22" y="29" font-size="13" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">ZWIFT</text></svg></div>
+        <div class="pt-name">Zwift</div>
+        <button class="pt-connect off" id="ptbtn-zwift">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-trainingPeaks" data-cat="sport" data-name="training peaks" onclick="toggleProvider('trainingPeaks')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#003A70"/><text x="22" y="25" font-size="9" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">TRAINING</text><text x="22" y="35" font-size="9" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">PEAKS</text></svg></div>
+        <div class="pt-name">TrainingPeaks</div>
+        <button class="pt-connect off" id="ptbtn-trainingPeaks">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-trainerRoad" data-cat="sport" data-name="trainerroad" onclick="toggleProvider('trainerRoad')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#E8000D"/><text x="22" y="29" font-size="10" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">TR</text></svg></div>
+        <div class="pt-name">TrainerRoad</div>
+        <button class="pt-connect off" id="ptbtn-trainerRoad">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-rouvy" data-cat="sport" data-name="rouvy" onclick="toggleProvider('rouvy')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#222"/><text x="22" y="29" font-size="12" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">ROUVY</text></svg></div>
+        <div class="pt-name">Rouvy</div>
+        <button class="pt-connect off" id="ptbtn-rouvy">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-mapMyFitness" data-cat="sport" data-name="mapmyfitness" onclick="toggleProvider('mapMyFitness')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#005BBB"/><text x="22" y="29" font-size="11" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">MMF</text></svg></div>
+        <div class="pt-name">MapMyFitness</div>
+        <button class="pt-connect off" id="ptbtn-mapMyFitness">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-mapMyRun" data-cat="sport" data-name="mapmyrun" onclick="toggleProvider('mapMyRun')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#0099D9"/><text x="22" y="29" font-size="11" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">MMR</text></svg></div>
+        <div class="pt-name">MapMyRun</div>
+        <button class="pt-connect off" id="ptbtn-mapMyRun">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-mapMyRide" data-cat="sport" data-name="mapmyride" onclick="toggleProvider('mapMyRide')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#E63535"/><text x="22" y="29" font-size="11" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">MMRi</text></svg></div>
+        <div class="pt-name">MapMyRide</div>
+        <button class="pt-connect off" id="ptbtn-mapMyRide">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-mapMyWalk" data-cat="sport" data-name="mapmywalk" onclick="toggleProvider('mapMyWalk')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#7C3AED"/><text x="22" y="29" font-size="11" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">MMW</text></svg></div>
+        <div class="pt-name">MapMyWalk</div>
+        <button class="pt-connect off" id="ptbtn-mapMyWalk">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-concept2" data-cat="sport" data-name="concept2 rowing" onclick="toggleProvider('concept2')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#003F87"/><text x="22" y="29" font-size="10" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">C2</text></svg></div>
+        <div class="pt-name">Concept2</div>
+        <button class="pt-connect off" id="ptbtn-concept2">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-rideWithGPS" data-cat="sport" data-name="ride with gps" onclick="toggleProvider('rideWithGPS')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#F57C00"/><text x="22" y="29" font-size="11" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">RWGPS</text></svg></div>
+        <div class="pt-name">Ride with GPS</div>
+        <button class="pt-connect off" id="ptbtn-rideWithGPS">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-hammerhead" data-cat="sport" data-name="hammerhead" onclick="toggleProvider('hammerhead')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#333"/><text x="22" y="29" font-size="10" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">HH</text></svg></div>
+        <div class="pt-name">Hammerhead</div>
+        <button class="pt-connect off" id="ptbtn-hammerhead">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-finalSurge" data-cat="sport" data-name="final surge" onclick="toggleProvider('finalSurge')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#1E3A5F"/><text x="22" y="29" font-size="10" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">FS</text></svg></div>
+        <div class="pt-name">Final Surge</div>
+        <button class="pt-connect off" id="ptbtn-finalSurge">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-xoss" data-cat="sport wearable" data-name="xoss" onclick="toggleProvider('xoss')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#222"/><text x="22" y="29" font-size="14" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">XOSS</text></svg></div>
+        <div class="pt-name">XOSS</div>
+        <button class="pt-connect off" id="ptbtn-xoss">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-xert" data-cat="sport" data-name="xert" onclick="toggleProvider('xert')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#444"/><text x="22" y="29" font-size="14" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">xert</text></svg></div>
+        <div class="pt-name">Xert</div>
+        <button class="pt-connect off" id="ptbtn-xert">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-bryton" data-cat="sport" data-name="bryton" onclick="toggleProvider('bryton')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#00A651"/><text x="22" y="29" font-size="12" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">bryton</text></svg></div>
+        <div class="pt-name">Bryton</div>
+        <button class="pt-connect off" id="ptbtn-bryton">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-lezyne" data-cat="sport" data-name="lezyne" onclick="toggleProvider('lezyne')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#111"/><text x="22" y="29" font-size="12" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">LEZ</text></svg></div>
+        <div class="pt-name">Lezyne</div>
+        <button class="pt-connect off" id="ptbtn-lezyne">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-todaysPlan" data-cat="sport" data-name="todays plan" onclick="toggleProvider('todaysPlan')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#333"/><text x="22" y="29" font-size="10" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">today's plan</text></svg></div>
+        <div class="pt-name">Today's Plan</div>
+        <button class="pt-connect off" id="ptbtn-todaysPlan">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-trainAsOne" data-cat="sport" data-name="train as one" onclick="toggleProvider('trainAsOne')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#FF5722"/><text x="22" y="29" font-size="10" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">Train1</text></svg></div>
+        <div class="pt-name">Train as One</div>
+        <button class="pt-connect off" id="ptbtn-trainAsOne">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-decathlon" data-cat="sport" data-name="decathlon" onclick="toggleProvider('decathlon')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#0082C3"/><text x="22" y="29" font-size="10" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">DECA</text></svg></div>
+        <div class="pt-name">Decathlon</div>
+        <button class="pt-connect off" id="ptbtn-decathlon">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-catapultOne" data-cat="sport" data-name="catapult one" onclick="toggleProvider('catapultOne')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#111"/><text x="22" y="29" font-size="9" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">CATAPULT</text></svg></div>
+        <div class="pt-name">Catapult One</div>
+        <button class="pt-connect off" id="ptbtn-catapultOne">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-insiders" data-cat="sport" data-name="insiders" onclick="toggleProvider('insiders')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#333"/><text x="22" y="29" font-size="11" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">insiders</text></svg></div>
+        <div class="pt-name">Insiders</div>
+        <button class="pt-connect off" id="ptbtn-insiders">Connect</button>
+      </div>
+      <!-- Nutrition -->
+      <div class="provider-tile" id="tile-myFitnessPal" data-cat="nutrition" data-name="myfitnesspal" onclick="toggleProvider('myFitnessPal')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#0073CF"/><text x="22" y="29" font-size="11" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">MFP</text></svg></div>
+        <div class="pt-name">MyFitnessPal</div>
+        <button class="pt-connect off" id="ptbtn-myFitnessPal">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-cronometer" data-cat="nutrition" data-name="cronometer" onclick="toggleProvider('cronometer')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#F5A623"/><text x="22" y="29" font-size="10" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">CRON</text></svg></div>
+        <div class="pt-name">Cronometer</div>
+        <button class="pt-connect off" id="ptbtn-cronometer">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-fatSecret" data-cat="nutrition" data-name="fatsecret" onclick="toggleProvider('fatSecret')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#7CB342"/><text x="22" y="29" font-size="10" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">FS</text></svg></div>
+        <div class="pt-name">FatSecret</div>
+        <button class="pt-connect off" id="ptbtn-fatSecret">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-macrosFirst" data-cat="nutrition" data-name="macrosfirst" onclick="toggleProvider('macrosFirst')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#1565C0"/><text x="22" y="29" font-size="9" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">MacrosFirst</text></svg></div>
+        <div class="pt-name">MacrosFirst</div>
+        <button class="pt-connect off" id="ptbtn-macrosFirst">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-myMacros" data-cat="nutrition" data-name="my macros" onclick="toggleProvider('myMacros')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#FF6B00"/><text x="22" y="29" font-size="10" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">M+</text></svg></div>
+        <div class="pt-name">My Macros+</div>
+        <button class="pt-connect off" id="ptbtn-myMacros">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-ketoMojo" data-cat="nutrition health" data-name="keto mojo" onclick="toggleProvider('ketoMojo')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#3B82F6"/><text x="22" y="29" font-size="10" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">KETO</text></svg></div>
+        <div class="pt-name">Keto Mojo</div>
+        <button class="pt-connect off" id="ptbtn-ketoMojo">Connect</button>
+      </div>
+      <!-- Sleep -->
+      <div class="provider-tile" id="tile-eightSleep" data-cat="sleep" data-name="eight sleep" onclick="toggleProvider('eightSleep')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#111"/><text x="22" y="29" font-size="14" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">8</text></svg></div>
+        <div class="pt-name">Eight Sleep</div>
+        <button class="pt-connect off" id="ptbtn-eightSleep">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-clue" data-cat="sleep health" data-name="clue" onclick="toggleProvider('clue')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#E040A0"/><text x="22" y="29" font-size="13" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">Clue</text></svg></div>
+        <div class="pt-name">Clue</div>
+        <button class="pt-connect off" id="ptbtn-clue">Connect</button>
+      </div>
+      <!-- Health / CGM -->
+      <div class="provider-tile" id="tile-dexcom" data-cat="health" data-name="dexcom" onclick="toggleProvider('dexcom')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#00A651"/><text x="22" y="29" font-size="12" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">DEX</text></svg></div>
+        <div class="pt-name">Dexcom</div>
+        <button class="pt-connect off" id="ptbtn-dexcom">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-moxy" data-cat="health sport" data-name="moxy" onclick="toggleProvider('moxy')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#444"/><text x="22" y="29" font-size="13" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">MOXY</text></svg></div>
+        <div class="pt-name">Moxy</div>
+        <button class="pt-connect off" id="ptbtn-moxy">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-cardioMood" data-cat="health sleep" data-name="cardiomood" onclick="toggleProvider('cardioMood')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#E53935"/><text x="22" y="29" font-size="10" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">CM</text></svg></div>
+        <div class="pt-name">CardioMood</div>
+        <button class="pt-connect off" id="ptbtn-cardioMood">Connect</button>
+      </div>
+      <div class="provider-tile" id="tile-virtuagym" data-cat="health sport" data-name="virtuagym" onclick="toggleProvider('virtuagym')">
+        <div class="pt-badge"></div>
+        <div class="pt-logo"><svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="10" fill="#FF5500"/><text x="22" y="29" font-size="10" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">VG</text></svg></div>
+        <div class="pt-name">Virtuagym</div>
+        <button class="pt-connect off" id="ptbtn-virtuagym">Connect</button>
+      </div>
+    </div><!-- /provider-grid -->
+
+    <div class="cmo-footer">
+      <p>Your data stays private. NOVA360 reads only &mdash; it never writes to your health apps.</p>
+    </div>
+  </div><!-- /connect-modal-sheet -->
+</div><!-- /connect-modal -->
+
+  <!-- ═══ DASHBOARD ═══ -->
+  <div class="screen active" id="screen-dashboard">
+    <div class="dash-header">
+      <div>
+        <div class="dash-greeting" id="greeting">Good morning,</div>
+        <div class="dash-name">Alex 👋</div>
+      </div>
+      <div class="streak-chip">🔥 <span>7 day streak</span></div>
+    </div>
+
+    <div class="score-card">
+      <div class="score-left">
+        <div class="score-label">Brain Performance Score</div>
+        <div class="score-number" id="score-number">99</div>
+        <div class="score-sub">Day 133 of your journey</div>
+      </div>
+      <div class="score-ring">
+        <div class="score-ring-pct">99%</div>
+        <div class="score-ring-lbl">EXCELLENT</div>
+      </div>
+    </div>
+
+    <div class="px" style="margin-bottom:12px"><div class="section-title">Performance Averages</div></div>
+    <div class="metrics-grid">
+      <div class="metric-tile" style="border-top-color:#7C3AED">
+        <div class="metric-icon">💜</div>
+        <div class="metric-value" id="metric-hrv" style="color:#7C3AED">4.1</div>
+        <div class="metric-label">HRV Coherence</div>
+      </div>
+      <div class="metric-tile" style="border-top-color:#10B981">
+        <div class="metric-icon">⚡</div>
+        <div class="metric-value" id="metric-pts" style="color:#10B981">226.3</div>
+        <div class="metric-label">Coherence Pts</div>
+      </div>
+      <div class="metric-tile" style="border-top-color:#3B82F6">
+        <div class="metric-icon">❤️</div>
+        <div class="metric-value" id="metric-bpm" style="color:#3B82F6">70.7</div>
+        <div class="metric-label">Avg BPM</div>
+      </div>
+      <div class="metric-tile" style="border-top-color:#F59E0B">
+        <div class="metric-icon">📊</div>
+        <div class="metric-value" id="metric-records" style="color:#F59E0B">133</div>
+        <div class="metric-label">Total Records</div>
+      </div>
+    </div>
+
+    <div class="chart-wrap">
+      <div class="chart-head">
+        <div class="section-title" style="margin-bottom:0">HRV Coherence Trend</div>
+        <div class="range-toggle">
+          <button class="range-btn" onclick="setRange('24h',this)">24h</button>
+          <button class="range-btn active" onclick="setRange('7d',this)">7d</button>
+          <button class="range-btn" onclick="setRange('28d',this)">28d</button>
+        </div>
+      </div>
+      <svg id="hrv-chart" viewBox="0 0 340 90" style="width:100%;display:block;margin-top:8px"></svg>
+    </div>
+
+    <div class="px" style="margin-bottom:12px"><div class="section-title">Your 360° Overview</div></div>
+    <div class="pillars">
+      <div class="pillar-row">
+        <div class="pillar-icon">😴</div>
+        <div class="pillar-bar-wrap"><div class="pillar-bar" style="width:82%;background:#6366F1"></div></div>
+        <div class="pillar-lbl">Sleep</div>
+        <div class="pillar-score" style="color:#6366F1">82</div>
+      </div>
+      <div class="pillar-row">
+        <div class="pillar-icon">🏃</div>
+        <div class="pillar-bar-wrap"><div class="pillar-bar" style="width:91%;background:#10B981"></div></div>
+        <div class="pillar-lbl">Activity</div>
+        <div class="pillar-score" style="color:#10B981">91</div>
+      </div>
+      <div class="pillar-row">
+        <div class="pillar-icon">🥗</div>
+        <div class="pillar-bar-wrap"><div class="pillar-bar" style="width:74%;background:#F59E0B"></div></div>
+        <div class="pillar-lbl">Nutrition</div>
+        <div class="pillar-score" style="color:#F59E0B">74</div>
+      </div>
+      <div class="pillar-row">
+        <div class="pillar-icon">🧘</div>
+        <div class="pillar-bar-wrap"><div class="pillar-bar" style="width:88%;background:#8B5CF6"></div></div>
+        <div class="pillar-lbl">Stress</div>
+        <div class="pillar-score" style="color:#8B5CF6">88</div>
+      </div>
+      <div class="pillar-row">
+        <div class="pillar-icon">❤️</div>
+        <div class="pillar-bar-wrap"><div class="pillar-bar" style="width:95%;background:#EC4899"></div></div>
+        <div class="pillar-lbl">Health</div>
+        <div class="pillar-score" style="color:#EC4899">95</div>
+      </div>
+      <div class="pillar-row">
+        <div class="pillar-icon">📱</div>
+        <div class="pillar-bar-wrap"><div class="pillar-bar" style="width:65%;background:#3B82F6"></div></div>
+        <div class="pillar-lbl">Screen</div>
+        <div class="pillar-score" style="color:#3B82F6">65</div>
+      </div>
+    </div>
+    <div class="pb"></div>
+  </div><!-- /dashboard -->
+
+  <!-- ═══ CHECK-IN ═══ -->
+  <div class="screen" id="screen-checkin">
+    <div class="screen-head"><h1>Daily Check-In</h1><p id="today-date"></p></div>
+
+    <div class="steps-indicator">
+      <div class="step-dot current" id="sdot-1">1</div>
+      <div class="step-line" id="sline-1"></div>
+      <div class="step-dot" id="sdot-2">2</div>
+      <div class="step-line" id="sline-2"></div>
+      <div class="step-dot" id="sdot-3">3</div>
+    </div>
+    <div class="step-labels"><span>Overall</span><span>Categories</span><span>Reflection</span></div>
+
+    <!-- Step 1 -->
+    <div id="ci-step1">
+      <div class="form-label">How are you feeling overall today?</div>
+      <div class="rating-row">
+        <button class="rating-btn" onclick="setRating(1,this)"><span class="r-emoji">😔</span><span class="r-label">Struggling</span></button>
+        <button class="rating-btn" onclick="setRating(2,this)"><span class="r-emoji">😕</span><span class="r-label">Below avg</span></button>
+        <button class="rating-btn" onclick="setRating(3,this)"><span class="r-emoji">😐</span><span class="r-label">Okay</span></button>
+        <button class="rating-btn" onclick="setRating(4,this)"><span class="r-emoji">🙂</span><span class="r-label">Good</span></button>
+        <button class="rating-btn" onclick="setRating(5,this)"><span class="r-emoji">😄</span><span class="r-label">Excellent</span></button>
+      </div>
+      <div class="form-label" style="margin-top:4px">What are you grateful for today?</div>
+      <textarea class="form-input" rows="3" placeholder="Family, morning coffee, a good night's sleep…" id="thankful-input"></textarea>
+      <div class="btn-row">
+        <button class="btn-primary" onclick="goStep(2)">Next →</button>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div id="ci-step2" style="display:none">
+      <div class="form-label">Rate each area of your wellbeing</div>
+      <div class="cat-list">
+        <div class="cat-row"><span class="cat-emoji">😴</span><span class="cat-name">Sleep Quality</span><div class="cat-btns" data-cat="sleep"></div></div>
+        <div class="cat-row"><span class="cat-emoji">⚡</span><span class="cat-name">Energy Level</span><div class="cat-btns" data-cat="energy"></div></div>
+        <div class="cat-row"><span class="cat-emoji">🎯</span><span class="cat-name">Focus</span><div class="cat-btns" data-cat="focus"></div></div>
+        <div class="cat-row"><span class="cat-emoji">🧘</span><span class="cat-name">Stress</span><div class="cat-btns" data-cat="stress"></div></div>
+        <div class="cat-row"><span class="cat-emoji">❤️</span><span class="cat-name">Mood</span><div class="cat-btns" data-cat="mood"></div></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="goStep(1)">← Back</button>
+        <button class="btn-primary" onclick="goStep(3)">Next →</button>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div id="ci-step3" style="display:none">
+      <div class="form-label">Reflection & Notes</div>
+      <p style="font-size:13px;color:var(--text-2);margin:0 20px 12px;line-height:1.7">What's one thing you want to focus on improving tomorrow?</p>
+      <textarea class="form-input" rows="5" placeholder="I noticed my focus dipped after lunch. Tomorrow I'll try a short walk during my break…"></textarea>
+      <div class="summary-card">
+        <div class="form-label" style="margin:0 0 10px">Today's Summary</div>
+        <div id="ci-summary"></div>
+      </div>
+      <div class="btn-row" style="margin-top:12px">
+        <button class="btn-secondary" onclick="goStep(2)">← Back</button>
+        <button class="btn-primary btn-green" onclick="submitCheckin()">Submit ✓</button>
+      </div>
+    </div>
+    <div class="pb"></div>
+  </div><!-- /checkin -->
+
+  <!-- ═══ TRAIN ═══ -->
+  <div class="screen" id="screen-train">
+    <div class="screen-head"><h1>Train Daily</h1><p>10-minute brain &amp; nervous system sessions</p></div>
+
+    <div class="recommended-card">
+      <div class="badge badge-accent">⭐ Today's Recommendation</div>
+      <div class="recommended-title">Heart Coherence Breathing</div>
+      <div class="recommended-desc">Based on your recent check-in data, resonant frequency breathing will help optimise your HRV and bring you into a high-coherence state.</div>
+      <div class="stat-row">
+        <div class="stat-item"><div class="stat-value">10 min</div><div class="stat-label">Duration</div></div>
+        <div class="stat-item"><div class="stat-value">Easy</div><div class="stat-label">Difficulty</div></div>
+        <div class="stat-item"><div class="stat-value">HRV +12%</div><div class="stat-label">Benefit</div></div>
+      </div>
+      <button class="start-btn" onclick="openBreathing()">▶ Start Now</button>
+    </div>
+
+    <div class="px" style="margin-bottom:12px"><div class="section-title">All Training Sessions</div></div>
+
+    <div class="session-card" style="border-left-color:#7C3AED">
+      <div class="session-header">
+        <div><div class="session-type">Breathing</div><div class="session-title">Heart Coherence Breathing</div></div>
+        <div><div class="session-min">10</div><div class="session-min-lbl">min</div></div>
+      </div>
+      <div class="session-desc">Guided resonant frequency breathing at 5 seconds in, 5 seconds out to optimise HRV and enter a coherent state.</div>
+      <button class="session-btn" style="background:#7C3AED;color:#fff" onclick="openBreathing()">Start Session</button>
+    </div>
+
+    <div class="session-card" style="border-left-color:#3B82F6">
+      <div class="session-header">
+        <div><div class="session-type">Focus</div><div class="session-title">Focus Enhancement</div></div>
+        <div><div class="session-min">10</div><div class="session-min-lbl">min</div></div>
+      </div>
+      <div class="session-desc">Neuro-feedback guided session to improve sustained attention and cognitive performance for study or work.</div>
+      <button class="session-btn" style="background:var(--green-muted);color:var(--green)">✓ Completed</button>
+    </div>
+
+    <div class="session-card" style="border-left-color:#10B981">
+      <div class="session-header">
+        <div><div class="session-type">Recovery</div><div class="session-title">Stress Recovery Protocol</div></div>
+        <div><div class="session-min">10</div><div class="session-min-lbl">min</div></div>
+      </div>
+      <div class="session-desc">Parasympathetic activation session to lower cortisol, reduce anxiety and restore nervous system balance.</div>
+      <button class="session-btn" style="background:#10B981;color:#fff" onclick="openBreathing()">Start Session</button>
+    </div>
+
+    <div class="connect-card" id="train-connect-card">
+      <div class="connect-title">&#x1F517; Connect Your Devices</div>
+      <div class="connect-desc">Link Apple Health, Garmin, Fitbit or WHOOP to unlock personalised HRV coaching, real-time readiness scores and adaptive nudges powered by your live biometric data.</div>
+      <button class="device-connect-btn" onclick="openConnectModal()">Manage Connections &rarr;</button>
+      <div id="connected-devices-summary" style="margin-top:12px"></div>
+    </div>
+    <div class="pb"></div>
+
+    <!-- Breathing overlay -->
+    <div class="breathing-screen" id="breathing-screen">
+      <div class="breathing-title">Heart Coherence Breathing</div>
+      <div class="cycles-count">Cycles completed: <span id="cycle-count">0</span></div>
+      <div class="breath-ring-wrap">
+        <div class="breath-ring-outer" id="breath-ring"></div>
+        <div class="breath-ring-inner" id="breath-inner">
+          <div class="breath-phase" id="breath-phase">Breathe In</div>
+          <div class="breath-count" id="breath-count">5</div>
+        </div>
+      </div>
+      <div class="breathing-tip">Breathe at 5 seconds in, 5 seconds out to optimise your heart rate variability and enter a coherent state.</div>
+      <button class="end-btn" onclick="closeBreathing()">End Session</button>
+    </div>
+  </div><!-- /train -->
+
+  <!-- ═══ NUDGES ═══ -->
+  <div class="screen" id="screen-nudges">
+    <div class="screen-head"><h1>Your Nudges</h1><p>Psycho-physiological recommendations powered by your data</p></div>
+
+    <div class="range-row">
+      <button class="range-pill" onclick="setPeriod('24h',this)">Last 24h</button>
+      <button class="range-pill active" onclick="setPeriod('7d',this)">7 Days</button>
+      <button class="range-pill" onclick="setPeriod('28d',this)">28 Days</button>
+    </div>
+
+    <!-- Data sources banner (dynamically populated by health JS) -->
+    <div id="data-sources-banner" style="margin:0 20px 16px"></div>
+
+    <div class="report-card">
+      <div class="report-hd">
+        <div class="badge badge-accent">🔬 Psycho-Physiological Report</div>
+        <div class="report-period" id="report-period">Past 7 days</div>
+      </div>
+      <div class="report-greeting" style="font-size:14px;margin-bottom:4px">Alex — Heart-Brain Coherence Assessment</div>
+
+      <div class="report-body">Your psychophysiological data reveals a sustained high-coherence state (mean HRV coherence ratio: 4.1) consistent with optimal synchronisation between the cardiac, nervous and hormonal systems — a pattern associated with enhanced cognitive performance and emotional self-regulation (McCraty et al., 2009).
+
+Apple Health sleep data (avg 7.4 hrs, 82 sleep score) indicates strong parasympathetic recovery windows overnight. Garmin HRV morning readings (rMSSD trending +12%) confirm progressively lower allostatic load across the 7-day window.
+
+Your daily BPZ check-in scores (avg 99/100) correlate with your highest coherence peaks — validating the heart-brain feedback loop described in HeartMath's Coherence Model: positive emotional states entrain cardiac rhythms, which in turn regulate prefrontal cortical activity and decision-making capacity.
+
+Key psychophysiological indicators:
+• Autonomic balance index: Parasympathetic-dominant (favourable)
+• Emotional regulation index: High — minimal LF/HF ratio variance
+• Cognitive performance window: 08:00–11:30 (peak coherence zone, Garmin data)
+• Social coherence events: 3 this week — each correlated with +0.6 coherence lift
+
+Intervention priority: Extend your peak coherence window into afternoon stress periods through resonant frequency breathing anchoring.</div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px;margin:0 20px 12px">
+      <div class="section-title" style="margin:0">Today's Personalised Nudges</div>
+      <div style="background:var(--accent);color:#fff;border-radius:10px;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">5</div>
+    </div>
+
+    <div class="nudge-card" style="background:rgba(79,70,229,0.07);border:1px solid rgba(79,70,229,0.18);border-left-color:#4F46E5">
+      <div class="nudge-hd"><span class="nudge-icon">🌙</span><span class="nudge-name" style="color:#4F46E5">Optimise Autonomic Recovery Tonight</span><span class="badge badge-accent">Priority</span></div>
+      <div class="nudge-body">Your Garmin rMSSD data indicates elevated sympathetic tone this evening (HRV 18% below your 7-day baseline). Research by McCraty & Shaffer (2015) links pre-sleep cardiac coherence with next-day cognitive resilience. Dim lights after 9PM, avoid screens after 10PM, and target 65–68°F bedroom temperature to facilitate parasympathetic entrainment.</div>
+      <div style="margin-top:8px;font-size:10px;color:var(--text-3);font-style:italic">📊 Source: Garmin HRV + Apple Health sleep staging</div>
+    </div>
+
+    <div class="nudge-card" style="background:rgba(5,150,105,0.07);border:1px solid rgba(5,150,105,0.18);border-left-color:#059669">
+      <div class="nudge-hd"><span class="nudge-icon">🏃</span><span class="nudge-name" style="color:#059669">Morning Walk + Resonant Frequency Breathing</span><span class="badge badge-green">Priority</span></div>
+      <div class="nudge-body">Your Apple Health step data shows activity before 9AM consistently produces a +0.8 coherence uplift in your afternoon check-in scores. Follow with 5 minutes of resonant frequency breathing (5s inhale / 5s exhale at ~0.1 Hz) — the resonant frequency shown by HeartMath research to maximally entrain baroreflex sensitivity and amplify HRV coherence.</div>
+      <div style="margin-top:8px;font-size:10px;color:var(--text-3);font-style:italic">📊 Source: Apple Health activity + BPZ daily check-in correlation</div>
+    </div>
+
+    <div class="nudge-card" style="background:rgba(217,119,6,0.07);border:1px solid rgba(217,119,6,0.16);border-left-color:#D97706">
+      <div class="nudge-hd"><span class="nudge-icon">🥗</span><span class="nudge-name" style="color:#D97706">Nutritional Support for HRV Recovery</span></div>
+      <div class="nudge-body">Your afternoon HRV dips (Garmin data, 14:00–16:00) suggest glycaemic variability is compressing your coherence window. Magnesium L-Threonate (2g with dinner) supports deep sleep architecture, while Tart Cherry extract (480mg) accelerates anti-inflammatory muscle recovery — reducing allostatic load on the autonomic nervous system overnight.</div>
+      <div style="margin-top:8px;font-size:10px;color:var(--text-3);font-style:italic">📊 Source: Garmin HRV intraday + BPZ energy check-in score</div>
+    </div>
+
+    <div class="nudge-card" style="background:rgba(37,99,235,0.07);border:1px solid rgba(37,99,235,0.16);border-left-color:#2563EB">
+      <div class="nudge-hd"><span class="nudge-icon">🧠</span><span class="nudge-name" style="color:#2563EB">Heart-Brain Integration Challenge</span></div>
+      <div class="nudge-body">Your coherence scores place you in the top 8% of BPZ student performance. McCraty's research on "coherence advantage" demonstrates that individuals at this level can further amplify performance by practising coherence maintenance during high-cognitive-load scenarios — board decisions, difficult conversations, public performance. Set an intention to use Quick Coherence® breathing before your next high-stakes interaction.</div>
+      <div style="margin-top:8px;font-size:10px;color:var(--text-3);font-style:italic">📊 Source: BPZ Brain Performance Score percentile ranking</div>
+    </div>
+
+    <div class="nudge-card" style="background:rgba(13,148,136,0.07);border:1px solid rgba(13,148,136,0.16);border-left-color:#0D9488">
+      <div class="nudge-hd"><span class="nudge-icon">🤝</span><span class="nudge-name" style="color:#0D9488">Social Coherence Activation</span></div>
+      <div class="nudge-body">Your 3 social activity events this week each produced a measurable +0.6 HRV coherence lift (Apple Health heart rate variability log). HeartMath research confirms that group coherence practice and prosocial connection entrain individual cardiac rhythms through a shared electromagnetic field effect. Plan a community gathering, worship experience, or group sport this week to sustain this positive autonomic momentum.</div>
+      <div style="margin-top:8px;font-size:10px;color:var(--text-3);font-style:italic">📊 Source: Apple Health + BPZ social check-in category</div>
+    </div>
+
+    <div class="px" style="margin:8px 0 12px"><div class="section-title">Focus Areas This Week</div></div>
+    <div class="cat-grid">
+      <div class="cat-tile"><span class="cat-tile-icon">😴</span><span class="cat-tile-name">Sleep</span><span class="cat-tile-trend" style="color:var(--green)">+18%</span></div>
+      <div class="cat-tile"><span class="cat-tile-icon">🏃</span><span class="cat-tile-name">Activity</span><span class="cat-tile-trend" style="color:var(--green)">On track</span></div>
+      <div class="cat-tile"><span class="cat-tile-icon">🥗</span><span class="cat-tile-name">Nutrition</span><span class="cat-tile-trend" style="color:var(--amber)">Review</span></div>
+      <div class="cat-tile"><span class="cat-tile-icon">🧘</span><span class="cat-tile-name">Stress</span><span class="cat-tile-trend" style="color:var(--green)">Improving</span></div>
+      <div class="cat-tile"><span class="cat-tile-icon">🤝</span><span class="cat-tile-name">Social</span><span class="cat-tile-trend" style="color:var(--green)">Strong</span></div>
+      <div class="cat-tile"><span class="cat-tile-icon">🧠</span><span class="cat-tile-name">Coherence</span><span class="cat-tile-trend" style="color:var(--green)">Excellent</span></div>
+    </div>
+    <div class="pb"></div>
+  </div><!-- /nudges -->
+
+  <!-- ═══ HISTORY ═══ -->
+  <div class="screen" id="screen-history">
+    <div class="screen-head"><h1>Check-In History</h1><p>Track your progress over time</p></div>
+
+    <div class="summary-stats">
+      <div class="stat-card"><div class="stat-card-val" style="color:#7C3AED">133</div><div class="stat-card-lbl">Total Days</div></div>
+      <div class="stat-card"><div class="stat-card-val" style="color:#10B981">99.2</div><div class="stat-card-lbl">Avg Rating</div></div>
+      <div class="stat-card"><div class="stat-card-val" style="color:#3B82F6">4.1</div><div class="stat-card-lbl">Avg Coherence</div></div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-head">
+        <div class="th col-day">Day</div>
+        <div class="th col-num">Rating</div>
+        <div class="th col-num">Coh.</div>
+        <div class="th col-num">BPM</div>
+        <div class="th col-zone" style="text-align:right">Zone</div>
+      </div>
+      <div class="table-row">
+        <div class="col-day"><div class="day-n">Day 133</div><div class="day-d">14 Sep 2026</div></div>
+        <div class="col-num" style="color:#10B981">100</div>
+        <div class="col-num" style="color:var(--text)">5.8</div>
+        <div class="col-num" style="color:var(--text)">72</div>
+        <div class="col-zone"><span class="zone zone-excellent">Excellent</span></div>
+      </div>
+      <div class="table-row">
+        <div class="col-day"><div class="day-n">Day 132</div><div class="day-d">13 Sep 2026</div></div>
+        <div class="col-num" style="color:#10B981">100</div>
+        <div class="col-num" style="color:var(--text)">4.2</div>
+        <div class="col-num" style="color:var(--text)">69</div>
+        <div class="col-zone"><span class="zone zone-excellent">Excellent</span></div>
+      </div>
+      <div class="table-row">
+        <div class="col-day"><div class="day-n">Day 131</div><div class="day-d">12 Sep 2026</div></div>
+        <div class="col-num" style="color:#3B82F6">99</div>
+        <div class="col-num" style="color:var(--text)">3.8</div>
+        <div class="col-num" style="color:var(--text)">77</div>
+        <div class="col-zone"><span class="zone zone-good">Good</span></div>
+      </div>
+      <div class="table-row">
+        <div class="col-day"><div class="day-n">Day 130</div><div class="day-d">11 Sep 2026</div></div>
+        <div class="col-num" style="color:#10B981">100</div>
+        <div class="col-num" style="color:var(--text)">4.6</div>
+        <div class="col-num" style="color:var(--text)">14</div>
+        <div class="col-zone"><span class="zone zone-excellent">Excellent</span></div>
+      </div>
+      <div class="table-row">
+        <div class="col-day"><div class="day-n">Day 129</div><div class="day-d">10 Sep 2026</div></div>
+        <div class="col-num" style="color:#3B82F6">98</div>
+        <div class="col-num" style="color:var(--text)">3.4</div>
+        <div class="col-num" style="color:var(--text)">70</div>
+        <div class="col-zone"><span class="zone zone-good">Good</span></div>
+      </div>
+      <div class="table-row">
+        <div class="col-day"><div class="day-n">Day 128</div><div class="day-d">9 Sep 2026</div></div>
+        <div class="col-num" style="color:#3B82F6">97</div>
+        <div class="col-num" style="color:var(--text)">4.1</div>
+        <div class="col-num" style="color:var(--text)">67</div>
+        <div class="col-zone"><span class="zone zone-mindfulness">Mindfulness</span></div>
+      </div>
+    </div>
+
+    <div class="pagination">
+      <button class="page-btn" disabled>← Prev</button>
+      <span class="page-info">Page 1 of 14</span>
+      <button class="page-btn">Next →</button>
+    </div>
+
+    <button class="export-btn">📥 Generate Progress Report</button>
+    <div class="pb"></div>
+  </div><!-- /history -->
+
+  <!-- ═══ PROFILE ═══ -->
+  <div class="screen" id="screen-profile">
+    <div class="profile-head">
+      <div class="avatar">AJ</div>
+      <div class="profile-name">Alex Johnson</div>
+      <div class="profile-school">Genesis Brain Institute</div>
+      <div class="points-badge">⭐ 226 Total Points</div>
+    </div>
+
+    <div class="progress-card">
+      <div class="progress-lbl">Journey Progress</div>
+      <div class="progress-track">
+        <div class="progress-fill" style="width:66.5%"></div>
+      </div>
+      <div class="progress-labels"><span>Day 133</span><span>Goal: Day 200</span></div>
+    </div>
+
+    <div class="px" style="margin-bottom:12px"><div class="section-title">Achievements</div></div>
+    <div class="achievements-grid">
+      <div class="ach-tile"><span class="ach-check">✓</span><span class="ach-icon">🔥</span><span class="ach-label">7-Day Streak</span></div>
+      <div class="ach-tile"><span class="ach-check">✓</span><span class="ach-icon">💯</span><span class="ach-label">100 Perfect Scores</span></div>
+      <div class="ach-tile"><span class="ach-check">✓</span><span class="ach-icon">🧠</span><span class="ach-label">Coherence Master</span></div>
+      <div class="ach-tile locked"><span class="ach-icon">⚡</span><span class="ach-label">50 Training Sessions</span></div>
+      <div class="ach-tile locked"><span class="ach-icon">🏆</span><span class="ach-label">200 Days Strong</span></div>
+      <div class="ach-tile locked"><span class="ach-icon">🌙</span><span class="ach-label">Sleep Optimiser</span></div>
+    </div>
+
+    <div class="px" style="margin-bottom:12px"><div class="section-title">Settings</div></div>
+    <div class="settings-list">
+      <div class="setting-row"><span class="setting-icon">🔔</span><div class="setting-content"><div class="setting-name">Notifications</div><div class="setting-sub">Daily reminders at 8:00 AM</div></div><span class="setting-chevron">›</span></div>
+      <div class="setting-row"><span class="setting-icon">📱</span><div class="setting-content"><div class="setting-name">Connected Devices</div><div class="setting-sub">0 devices connected</div></div><span class="setting-chevron">›</span></div>
+      <div class="setting-row"><span class="setting-icon">🔒</span><div class="setting-content"><div class="setting-name">Privacy</div><div class="setting-sub">Manage your data permissions</div></div><span class="setting-chevron">›</span></div>
+      <div class="setting-row"><span class="setting-icon">📊</span><div class="setting-content"><div class="setting-name">Data Export</div><div class="setting-sub">Download your history as CSV</div></div><span class="setting-chevron">›</span></div>
+      <div class="setting-row"><span class="setting-icon">🎯</span><div class="setting-content"><div class="setting-name">Goals</div><div class="setting-sub">Set your wellness targets</div></div><span class="setting-chevron">›</span></div>
+    </div>
+
+    <div class="nova-footer">
+      <h3>NOVA360</h3>
+      <p>Neuro Optimization Virtual Assistant</p>
+      <p style="margin-top:6px">Powered by Brain Performance Zone · Version 1.0.0</p>
+    </div>
+    <div class="pb"></div>
+  </div><!-- /profile -->
+
+  <!-- ═══ TAB BAR ═══ -->
+  <div class="tabbar">
+    <button class="tab active" id="tab-dashboard" onclick="switchTab('dashboard')">
+      <span class="tab-icon">🏠</span>
+      <span class="tab-label">Home</span>
+      <div class="tab-dot"></div>
+    </button>
+    <button class="tab" id="tab-checkin" onclick="switchTab('checkin')">
+      <span class="tab-icon">✅</span>
+      <span class="tab-label">Check-In</span>
+    </button>
+    <button class="tab" id="tab-train" onclick="switchTab('train')">
+      <span class="tab-icon">🧠</span>
+      <span class="tab-label">Train</span>
+    </button>
+    <button class="tab" id="tab-nudges" onclick="switchTab('nudges')">
+      <span class="tab-icon">💡</span>
+      <span class="tab-label">Nudges</span>
+    </button>
+    <button class="tab" id="tab-history" onclick="switchTab('history')">
+      <span class="tab-icon">📊</span>
+      <span class="tab-label">History</span>
+    </button>
+    <button class="tab" id="tab-profile" onclick="switchTab('profile')">
+      <span class="tab-icon">👤</span>
+      <span class="tab-label">Profile</span>
+    </button>
+  </div>
+</div><!-- /device -->
+
+<script>
+// ── Tab switching ──
+function switchTab(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.remove('active');
+    const dot = t.querySelector('.tab-dot');
+    if (dot) dot.remove();
+  });
+  document.getElementById('screen-' + name).classList.add('active');
+  const tab = document.getElementById('tab-' + name);
+  tab.classList.add('active');
+  const dot = document.createElement('div');
+  dot.className = 'tab-dot';
+  tab.appendChild(dot);
+  // scroll to top
+  document.getElementById('screen-' + name).scrollTop = 0;
+}
+
+// ── Greeting ──
+(function() {
+  const h = new Date().getHours();
+  document.getElementById('greeting').textContent =
+    h < 12 ? 'Good morning,' : h < 17 ? 'Good afternoon,' : 'Good evening,';
+  document.getElementById('today-date').textContent =
+    new Date().toLocaleDateString('en-AU', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+})();
+
+// ── HRV Chart ──
+const chartData = {
+  '7d': { labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], values:[4.1,3.8,4.6,5.8,4.2,3.4,4.1] },
+  '24h': { labels:['6am','9am','12pm','3pm','6pm','9pm','Now'], values:[3.8,4.2,5.1,4.6,3.9,4.8,5.2] },
+  '28d': { labels:['W1','W2','W3','W4'], values:[3.9,4.3,4.7,4.1] },
+};
+
+function drawChart(key) {
+  const { labels, values } = chartData[key];
+  const svg = document.getElementById('hrv-chart');
+  const W = 340, H = 90;
+  const pad = { t:8, r:8, b:22, l:28 };
+  const pw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
+  const max = Math.max(...values) * 1.15, min = 0;
+  const n = values.length;
+  const pts = values.map((v,i) => ({
+    x: pad.l + (n===1 ? pw/2 : (i/(n-1))*pw),
+    y: pad.t + (1 - (v-min)/(max-min)) * ph
+  }));
+  const poly = pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+  const area = `${pts[0].x.toFixed(1)},${(pad.t+ph).toFixed(1)} ` +
+    pts.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ') +
+    ` ${pts[pts.length-1].x.toFixed(1)},${(pad.t+ph).toFixed(1)}`;
+  let html = '';
+  // grid
+  [0,0.5,1].forEach(t => {
+    const y = (pad.t + t*ph).toFixed(1);
+    const val = (max*(1-t)).toFixed(1);
+    html += `<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="#2A2444" stroke-width="1"/>`;
+    html += `<text x="${pad.l-4}" y="${(+y+4).toFixed(1)}" text-anchor="end" font-size="8" fill="#5A5278" font-family="Manrope,sans-serif">${val}</text>`;
+  });
+  // area fill
+  html += `<polygon points="${area}" fill="url(#hrv-grad)" opacity="0.4"/>`;
+  html += `<defs><linearGradient id="hrv-grad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7C3AED"/><stop offset="100%" stop-color="#7C3AED" stop-opacity="0"/></linearGradient></defs>`;
+  // line
+  html += `<polyline points="${poly}" fill="none" stroke="#7C3AED" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+  // dots + highlight last
+  pts.forEach((p,i) => {
+    const isLast = i === pts.length-1;
+    if (isLast) {
+      html += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="5" fill="#0A0812" stroke="#7C3AED" stroke-width="2"/>`;
+      html += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="2.5" fill="#7C3AED"/>`;
+    } else {
+      html += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3" fill="#7C3AED"/>`;
+    }
+  });
+  // x labels
+  labels.forEach((lbl,i) => {
+    const x = pts[i].x.toFixed(1);
+    html += `<text x="${x}" y="${H-4}" text-anchor="middle" font-size="8" fill="#5A5278" font-family="Manrope,sans-serif">${lbl}</text>`;
+  });
+  svg.innerHTML = html;
+}
+
+function setRange(key, btn) {
+  document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  drawChart(key);
+}
+drawChart('7d');
+
+// ── Check-In logic ──
+let currentStep = 1;
+let selectedRating = null;
+const catRatings = {};
+
+// Build cat buttons
+document.querySelectorAll('.cat-btns').forEach(wrap => {
+  const cat = wrap.dataset.cat;
+  for (let v = 1; v <= 5; v++) {
+    const btn = document.createElement('button');
+    btn.className = 'cat-num';
+    btn.textContent = v;
+    btn.onclick = () => {
+      catRatings[cat] = v;
+      wrap.querySelectorAll('.cat-num').forEach((b,i) => b.classList.toggle('active', i+1===v));
+    };
+    wrap.appendChild(btn);
+  }
+});
+
+function setRating(v, btn) {
+  selectedRating = v;
+  document.querySelectorAll('.rating-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function goStep(n) {
+  document.getElementById('ci-step' + currentStep).style.display = 'none';
+  currentStep = n;
+  document.getElementById('ci-step' + n).style.display = '';
+  // update dots
+  for (let i=1; i<=3; i++) {
+    const dot = document.getElementById('sdot-'+i);
+    dot.classList.remove('done','current');
+    if (i < n) dot.classList.add('done');
+    else if (i === n) dot.classList.add('current');
+    if (i < 3) {
+      const line = document.getElementById('sline-'+i);
+      line.classList.toggle('done', i < n);
+    }
+  }
+  if (n === 3) buildSummary();
+}
+
+const ratingLabels = ['','Struggling','Below average','Okay','Good','Excellent'];
+const catNames = {sleep:'Sleep Quality',energy:'Energy Level',focus:'Focus',stress:'Stress',mood:'Mood'};
+const catEmojis = {sleep:'😴',energy:'⚡',focus:'🎯',stress:'🧘',mood:'❤️'};
+
+function buildSummary() {
+  const el = document.getElementById('ci-summary');
+  let html = `<div class="summary-row"><span>Overall Rating</span><span>${ratingLabels[selectedRating] || 'Not set'}</span></div>`;
+  Object.entries(catRatings).forEach(([k,v]) => {
+    html += `<div class="summary-row"><span>${catEmojis[k]} ${catNames[k]}</span><span>${v}/5</span></div>`;
+  });
+  el.innerHTML = html;
+}
+
+function submitCheckin() {
+  alert('Check-in Complete! 🎉\nYour daily brain performance check-in has been recorded. Keep up the great work!');
+  goStep(1);
+  selectedRating = null;
+  document.querySelectorAll('.rating-btn').forEach(b => b.classList.remove('active'));
+  Object.keys(catRatings).forEach(k => delete catRatings[k]);
+  document.querySelectorAll('.cat-num').forEach(b => b.classList.remove('active'));
+  document.getElementById('thankful-input').value = '';
+}
+
+// ── Breathing exercise ──
+let breathTimer = null;
+let breathPhase = 'inhale';
+let breathCount = 5;
+let cycles = 0;
+
+const phaseColors = { inhale:'#7C3AED', hold:'#F59E0B', exhale:'#10B981' };
+const phaseLabels = { inhale:'Breathe In', hold:'Hold', exhale:'Breathe Out' };
+const phaseDuration = { inhale:5, hold:2, exhale:5 };
+
+function openBreathing() {
+  breathPhase = 'inhale'; breathCount = 5; cycles = 0;
+  document.getElementById('breathing-screen').classList.add('show');
+  updateBreathUI();
+  breathTimer = setInterval(tickBreath, 1000);
+}
+
+function closeBreathing() {
+  clearInterval(breathTimer); breathTimer = null;
+  document.getElementById('breathing-screen').classList.remove('show');
+}
+
+function tickBreath() {
+  breathCount--;
+  if (breathCount <= 0) {
+    if (breathPhase === 'inhale') breathPhase = 'hold';
+    else if (breathPhase === 'hold') breathPhase = 'exhale';
+    else { breathPhase = 'inhale'; cycles++; document.getElementById('cycle-count').textContent = cycles; }
+    breathCount = phaseDuration[breathPhase];
+  }
+  updateBreathUI();
+}
+
+function updateBreathUI() {
+  const color = phaseColors[breathPhase];
+  document.getElementById('breath-phase').textContent = phaseLabels[breathPhase];
+  document.getElementById('breath-phase').style.color = color;
+  document.getElementById('breath-count').textContent = breathCount;
+  document.getElementById('breath-count').style.color = color;
+  const ring = document.getElementById('breath-ring');
+  const inner = document.getElementById('breath-inner');
+  ring.style.borderColor = color;
+  inner.style.background = color + '22';
+  if (breathPhase === 'inhale') {
+    ring.style.transform = 'scale(1.35)';
+    ring.style.transition = `transform ${phaseDuration.inhale}s ease-in-out, border-color 0.4s`;
+  } else if (breathPhase === 'exhale') {
+    ring.style.transform = 'scale(1)';
+    ring.style.transition = `transform ${phaseDuration.exhale}s ease-in-out, border-color 0.4s`;
+  } else {
+    ring.style.transition = 'border-color 0.4s';
+  }
+}
+
+// ── Nudge period ──
+const periodLabels = { '24h':'Last 24 hours', '7d':'Past 7 days', '28d':'Past 28 days' };
+function setPeriod(key, btn) {
+  document.querySelectorAll('.range-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('report-period').textContent = periodLabels[key];
+}
+
+// ── Health Provider Integration ──
+(function (global) {
+  'use strict';
+
+  // ── Provider catalogue ──────────────────────────────────────────────────
+  var HEALTH_PROVIDERS = {
+    appleHealth: {
+      id: 'appleHealth',
+      name: 'Apple Health',
+      color: '#FF2D55',
+      emoji: '🍎',
+      webCapable: false,
+      desc: 'Steps, heart rate, HRV, sleep stages, SpO₂, VO₂ max and more from your iPhone.',
+      simData: {
+        steps: 9247,
+        activeCalories: 487,
+        heartRate: 68,
+        sleepHours: 7.4,
+        sleepScore: 84,
+        hrv: 52,
+        hrv_rmssd: 52,
+        respiratoryRate: 14.2,
+        bloodOxygen: 98
+      }
+    },
+    garmin: {
+      id: 'garmin',
+      name: 'Garmin Connect',
+      color: '#009CDE',
+      emoji: '🔵',
+      webCapable: true,
+      desc: 'Body Battery, stress, HRV trend, training load, sleep score and VO₂ max from Garmin devices.',
+      simData: {
+        hrv_rmssd: 54,
+        hrv_sdnn: 68,
+        stressLevel: 22,
+        bodyBattery: 78,
+        vo2max: 52,
+        restingHR: 62,
+        sleepScore: 81,
+        recoveryAdvisor: 'Good to go'
+      }
+    },
+    fitbit: {
+      id: 'fitbit',
+      name: 'Fitbit',
+      color: '#00B0B9',
+      emoji: '💙',
+      webCapable: true,
+      desc: 'Steps, daily HRV, sleep score, readiness, skin temperature, SpO₂ and active zone minutes.',
+      simData: {
+        heartRate: 65,
+        hrv_rmssd: 49,
+        sleepScore: 82,
+        sleepDuration: 7.2,
+        activeMinutes: 42,
+        steps: 8934,
+        spO2: 97,
+        skinTemp: 0.3
+      }
+    },
+    whoop: {
+      id: 'whoop',
+      name: 'WHOOP',
+      color: '#00C49A',
+      emoji: '💚',
+      webCapable: true,
+      desc: 'Recovery score, HRV (RMSSD), daily strain, sleep performance and respiratory rate.',
+      simData: {
+        recoveryScore: 87,
+        hrv: 78,
+        hrv_rmssd: 78,
+        restingHR: 58,
+        sleepPerformance: 89,
+        strainScore: 8.4,
+        respiratoryRate: 15.1,
+        skinTemp: 98.2,
+        dayStrain: 'Moderate'
+      }
+    }
+  };
+
+  // ── State ────────────────────────────────────────────────────────────────
+  function mkP(id, name) { return { id: id, name: name, connected: false, connecting: false, data: null, lastSync: null }; }
+  var healthState = {
+    providers: {
+      appleHealth:   mkP('appleHealth',   'Apple Health'),
+      garmin:        mkP('garmin',        'Garmin'),
+      googleFit:     mkP('googleFit',     'Google Fit'),
+      fitbit:        mkP('fitbit',        'Fitbit'),
+      oura:          mkP('oura',          'Oura Ring'),
+      withings:      mkP('withings',      'Withings'),
+      whoop:         mkP('whoop',         'WHOOP'),
+      samsungHealth: mkP('samsungHealth', 'Samsung Health'),
+      polar:         mkP('polar',         'Polar'),
+      suunto:        mkP('suunto',        'Suunto'),
+      ultrahuman:    mkP('ultrahuman',    'Ultrahuman'),
+      coros:         mkP('coros',         'COROS'),
+      amazfit:       mkP('amazfit',       'Amazfit'),
+      zepp:          mkP('zepp',          'ZEPP'),
+      huawei:        mkP('huawei',        'Huawei Health'),
+      omron:         mkP('omron',         'Omron'),
+      biostrap:      mkP('biostrap',      'Biostrap'),
+      inBody:        mkP('inBody',        'InBody'),
+      wahoo:         mkP('wahoo',         'Wahoo'),
+      iFit:          mkP('iFit',          'iFIT'),
+      strava:        mkP('strava',        'Strava'),
+      runkeeper:     mkP('runkeeper',     'Runkeeper'),
+      peloton:       mkP('peloton',       'Peloton'),
+      zwift:         mkP('zwift',         'Zwift'),
+      trainingPeaks: mkP('trainingPeaks', 'TrainingPeaks'),
+      trainerRoad:   mkP('trainerRoad',   'TrainerRoad'),
+      rouvy:         mkP('rouvy',         'Rouvy'),
+      mapMyFitness:  mkP('mapMyFitness',  'MapMyFitness'),
+      mapMyRun:      mkP('mapMyRun',      'MapMyRun'),
+      mapMyRide:     mkP('mapMyRide',     'MapMyRide'),
+      mapMyWalk:     mkP('mapMyWalk',     'MapMyWalk'),
+      concept2:      mkP('concept2',      'Concept2'),
+      rideWithGPS:   mkP('rideWithGPS',   'Ride with GPS'),
+      hammerhead:    mkP('hammerhead',    'Hammerhead'),
+      finalSurge:    mkP('finalSurge',    'Final Surge'),
+      xoss:          mkP('xoss',          'XOSS'),
+      xert:          mkP('xert',          'Xert'),
+      bryton:        mkP('bryton',        'Bryton'),
+      lezyne:        mkP('lezyne',        'Lezyne'),
+      todaysPlan:    mkP('todaysPlan',    "Today's Plan"),
+      trainAsOne:    mkP('trainAsOne',    'Train as One'),
+      decathlon:     mkP('decathlon',     'Decathlon'),
+      catapultOne:   mkP('catapultOne',   'Catapult One'),
+      insiders:      mkP('insiders',      'Insiders'),
+      myFitnessPal:  mkP('myFitnessPal',  'MyFitnessPal'),
+      cronometer:    mkP('cronometer',    'Cronometer'),
+      fatSecret:     mkP('fatSecret',     'FatSecret'),
+      macrosFirst:   mkP('macrosFirst',   'MacrosFirst'),
+      myMacros:      mkP('myMacros',      'My Macros+'),
+      ketoMojo:      mkP('ketoMojo',      'Keto Mojo'),
+      eightSleep:    mkP('eightSleep',    'Eight Sleep'),
+      clue:          mkP('clue',          'Clue'),
+      dexcom:        mkP('dexcom',        'Dexcom'),
+      moxy:          mkP('moxy',          'Moxy'),
+      cardioMood:    mkP('cardioMood',    'CardioMood'),
+      virtuagym:     mkP('virtuagym',     'Virtuagym'),
+    }
+  };
+
+  // ── Persistence ──────────────────────────────────────────────────────────
+  function loadHealthState() {
+    try {
+      var saved = localStorage.getItem('nova360_health');
+      if (saved) {
+        var parsed = JSON.parse(saved);
+        if (parsed && parsed.providers) {
+          Object.keys(healthState.providers).forEach(function (pid) {
+            if (parsed.providers[pid]) {
+              var s = parsed.providers[pid];
+              healthState.providers[pid].connected = !!s.connected;
+              healthState.providers[pid].connecting = false;
+              healthState.providers[pid].data = s.data || null;
+              healthState.providers[pid].lastSync = s.lastSync || null;
+            }
+          });
+        }
+      }
+    } catch (e) { /* storage unavailable */ }
+  }
+
+  function saveHealthState() {
+    try {
+      var toSave = { providers: {} };
+      Object.keys(healthState.providers).forEach(function (pid) {
+        var p = healthState.providers[pid];
+        toSave.providers[pid] = {
+          connected: p.connected,
+          connecting: false,
+          data: p.data,
+          lastSync: p.lastSync
+        };
+      });
+      localStorage.setItem('nova360_health', JSON.stringify(toSave));
+    } catch (e) { /* storage unavailable */ }
+  }
+
+  // ── Time formatting ──────────────────────────────────────────────────────
+  function fmtSyncTime(ts) {
+    if (!ts) return '';
+    var m = Math.floor((Date.now() - ts) / 60000);
+    if (m < 1)  return 'just now';
+    if (m < 60) return m + 'm ago';
+    var h = Math.floor(m / 60);
+    if (h < 24) return h + 'h ago';
+    return Math.floor(h / 24) + 'd ago';
+  }
+
+  // ── Modal ────────────────────────────────────────────────────────────────
+  function openConnectModal() {
+    var modal = document.getElementById('connect-modal');
+    if (!modal) return;
+    modal.classList.add('show');
+    modal.hidden = false;
+    renderAllCards();
+    renderAllTiles();
+  }
+
+  function closeConnectModal() {
+    var modal = document.getElementById('connect-modal');
+    if (!modal) return;
+    modal.classList.remove('show');
+    modal.hidden = true;
+  }
+
+  // ── Provider tile toggle ─────────────────────────────────────────────────
+  function toggleProvider(pid) {
+    var pState = healthState.providers[pid];
+    if (!pState) return;
+    if (pState.connected) {
+      pState.connected = false;
+      renderProviderTile(pid);
+      saveHealthState();
+      updateDashboardFromHealth();
+      showConnectToast('Disconnected from ' + pState.name);
+    } else {
+      pState.connecting = true;
+      renderProviderTile(pid);
+      setTimeout(function () {
+        pState.connecting = false;
+        pState.connected = true;
+        pState.lastSync = Date.now();
+        pState.data = generateSimData(pid);
+        healthState.providers[pid] = pState;
+        saveHealthState();
+        renderProviderTile(pid);
+        updateDashboardFromHealth();
+        showConnectToast('Connected to ' + pState.name + ' ✓');
+      }, 1800 + Math.random() * 800);
+    }
+  }
+
+  function generateSimData(pid) {
+    var bases = {
+      appleHealth:   { hrv: 62, heartRate: 64, steps: 9200, sleepHours: 7.4, bloodOxygen: 98, activeCalories: 480 },
+      garmin:        { hrv_rmssd: 58, bodyBattery: 74, stressLevel: 28, restingHR: 57, sleepScore: 78, vo2max: 44 },
+      fitbit:        { hrv_rmssd: 55, heartRate: 65, sleepScore: 82, steps: 8800, spO2: 97, activeMinutes: 45 },
+      oura:          { hrv: 61, readiness: 83, sleepScore: 79, temperature: 0.1 },
+      whoop:         { recoveryScore: 84, hrv: 72, restingHR: 59, sleepPerformance: 88, strainScore: 9.1 },
+      withings:      { weight: 78.2, bmi: 22.8, systolic: 118, diastolic: 74, heartRate: 63 },
+      polar:         { hrv: 59, trainingLoad: 65, cardioLoad: 58, restingHR: 60, sleepScore: 76 },
+      samsungHealth: { steps: 8400, heartRate: 67, sleepScore: 74, stressLevel: 32 },
+      dexcom:        { glucose: 95, trend: 'Steady', glucoseMin: 82, glucoseMax: 112 },
+    };
+    var d = bases[pid] || { hrv: Math.round(50 + Math.random() * 30), steps: Math.round(6000 + Math.random() * 5000) };
+    // Add small random variation
+    var out = {};
+    Object.keys(d).forEach(function (k) {
+      var v = d[k];
+      out[k] = typeof v === 'number' ? Math.round(v * (0.9 + Math.random() * 0.2) * 10) / 10 : v;
+    });
+    return out;
+  }
+
+  function renderProviderTile(pid) {
+    var tile = document.getElementById('tile-' + pid);
+    var btn  = document.getElementById('ptbtn-' + pid);
+    var pState = healthState.providers[pid];
+    if (!tile || !pState) return;
+    if (pState.connected) {
+      tile.classList.add('connected');
+      tile.classList.remove('connecting');
+      if (btn) { btn.className = 'pt-connect on'; btn.textContent = 'Connected'; }
+    } else if (pState.connecting) {
+      tile.classList.remove('connected');
+      tile.classList.add('connecting');
+      if (btn) { btn.className = 'pt-connect off'; btn.textContent = 'Connecting…'; }
+    } else {
+      tile.classList.remove('connected', 'connecting');
+      if (btn) { btn.className = 'pt-connect off'; btn.textContent = 'Connect'; }
+    }
+  }
+
+  function renderAllTiles() {
+    Object.keys(healthState.providers).forEach(function (pid) { renderProviderTile(pid); });
+  }
+
+  // ── Search + Filter ──────────────────────────────────────────────────────
+  var _activeCat = 'all';
+  function filterProviderTiles(q) {
+    q = (q || '').toLowerCase().trim();
+    var tiles = document.querySelectorAll('#provider-grid .provider-tile');
+    tiles.forEach(function (t) {
+      var name = (t.dataset.name || '').toLowerCase();
+      var cat  = (t.dataset.cat  || '');
+      var matchQ   = !q || name.indexOf(q) !== -1;
+      var matchCat = _activeCat === 'all' || cat.indexOf(_activeCat) !== -1;
+      t.style.display = (matchQ && matchCat) ? '' : 'none';
+    });
+  }
+  function filterProviderCat(cat, btn) {
+    _activeCat = cat;
+    document.querySelectorAll('.cmo-cat').forEach(function (b) { b.classList.remove('active'); });
+    if (btn) btn.classList.add('active');
+    var q = (document.getElementById('cmo-search') || {}).value || '';
+    filterProviderTiles(q);
+  }
+
+  // ── Card rendering ───────────────────────────────────────────────────────
+  function renderProviderCard(providerId) {
+    var provider = HEALTH_PROVIDERS[providerId];
+    var pState   = healthState.providers[providerId];
+    if (!provider || !pState) return;
+
+    var card = document.getElementById('card-' + providerId);
+    if (!card) return;
+
+    var isConn = pState.connected;
+    var isConn2 = pState.connecting;
+
+    // Card class
+    if (isConn) {
+      card.classList.add('connected');
+      card.classList.remove('connecting');
+    } else if (isConn2) {
+      card.classList.remove('connected');
+      card.classList.add('connecting');
+    } else {
+      card.classList.remove('connected', 'connecting');
+    }
+
+    // Status chip
+    var chip = card.querySelector('.status-chip');
+    if (chip) {
+      if (isConn) {
+        chip.textContent = '● Connected';
+        chip.style.color = '#22C55E';
+      } else if (isConn2) {
+        chip.textContent = '● Connecting…';
+        chip.style.color = 'var(--text-3, #9CA3AF)';
+      } else {
+        chip.textContent = '● Not connected';
+        chip.style.color = 'var(--text-3, #9CA3AF)';
+      }
+    }
+
+    // Button
+    var btn = card.querySelector('.connect-btn');
+    if (btn) {
+      if (isConn) {
+        btn.textContent = '✓ Connected';
+        btn.classList.add('connected');
+        btn.classList.remove('connecting');
+        btn.disabled = false;
+      } else if (isConn2) {
+        btn.innerHTML = '<span class="btn-spin"></span> Connecting…';
+        btn.classList.add('connecting');
+        btn.classList.remove('connected');
+        btn.disabled = true;
+      } else {
+        btn.textContent = providerId === 'appleHealth' ? 'Connect' : 'Connect via OAuth';
+        btn.classList.remove('connected', 'connecting');
+        btn.disabled = false;
+      }
+    }
+
+    // Disconnect button visibility
+    var disconnBtn = card.querySelector('.disconnect-btn');
+    if (disconnBtn) {
+      disconnBtn.style.display = isConn ? '' : 'none';
+    }
+
+    // Sync time
+    var syncEl = card.querySelector('.sync-time');
+    if (syncEl) {
+      if (isConn && pState.lastSync) {
+        syncEl.textContent = 'Last synced ' + fmtSyncTime(pState.lastSync);
+        syncEl.hidden = false;
+      } else {
+        syncEl.hidden = true;
+      }
+    }
+
+    // Data panel
+    var panel = document.getElementById('panel-' + providerId);
+    if (panel) {
+      if (isConn && pState.data) {
+        panel.classList.add('open');
+        panel.hidden = false;
+        renderDataPanel(providerId, panel, pState.data);
+      } else {
+        panel.classList.remove('open');
+        panel.hidden = true;
+        panel.innerHTML = '';
+      }
+    }
+  }
+
+  function renderDataPanel(providerId, el, data) {
+    var rows = [];
+
+    if (providerId === 'appleHealth') {
+      if (data.steps != null)          rows.push({ label: 'Steps',           val: Number(data.steps).toLocaleString() });
+      if (data.heartRate != null)       rows.push({ label: 'Heart Rate',      val: data.heartRate + ' bpm' });
+      if (data.hrv != null)             rows.push({ label: 'HRV',             val: data.hrv + ' ms' });
+      if (data.sleepHours != null)      rows.push({ label: 'Sleep',           val: data.sleepHours + 'h' });
+      if (data.bloodOxygen != null)     rows.push({ label: 'Blood Oxygen',    val: data.bloodOxygen + '%' });
+      if (data.respiratoryRate != null) rows.push({ label: 'Respiratory Rate',val: data.respiratoryRate + ' br/min' });
+      if (data.activeCalories != null)  rows.push({ label: 'Active Calories', val: data.activeCalories + ' kcal' });
+    } else if (providerId === 'garmin') {
+      if (data.bodyBattery != null)     rows.push({ label: 'Body Battery',    val: data.bodyBattery + '%' });
+      if (data.hrv_rmssd != null)       rows.push({ label: 'HRV (RMSSD)',     val: data.hrv_rmssd + ' ms' });
+      if (data.stressLevel != null)     rows.push({ label: 'Stress Level',    val: data.stressLevel });
+      if (data.restingHR != null)       rows.push({ label: 'Resting HR',      val: data.restingHR + ' bpm' });
+      if (data.sleepScore != null)      rows.push({ label: 'Sleep Score',     val: data.sleepScore });
+      if (data.vo2max != null)          rows.push({ label: 'VO₂ Max',         val: data.vo2max + ' ml/kg/min' });
+      if (data.recoveryAdvisor != null) rows.push({ label: 'Recovery',        val: data.recoveryAdvisor });
+    } else if (providerId === 'fitbit') {
+      if (data.heartRate != null)       rows.push({ label: 'Heart Rate',      val: data.heartRate + ' bpm' });
+      if (data.hrv_rmssd != null)       rows.push({ label: 'HRV (RMSSD)',     val: data.hrv_rmssd + ' ms' });
+      if (data.sleepScore != null)      rows.push({ label: 'Sleep Score',     val: data.sleepScore });
+      if (data.steps != null)           rows.push({ label: 'Steps',           val: Number(data.steps).toLocaleString() });
+      if (data.spO2 != null)            rows.push({ label: 'SpO₂',            val: data.spO2 + '%' });
+      if (data.activeMinutes != null)   rows.push({ label: 'Active Minutes',  val: data.activeMinutes + ' min' });
+      if (data.skinTemp != null)        rows.push({ label: 'Skin Temp Var.',  val: (data.skinTemp > 0 ? '+' : '') + data.skinTemp + '°C' });
+    } else if (providerId === 'whoop') {
+      if (data.recoveryScore != null)   rows.push({ label: 'Recovery Score',  val: data.recoveryScore + '%' });
+      if (data.hrv != null)             rows.push({ label: 'HRV (RMSSD)',     val: data.hrv + ' ms' });
+      if (data.restingHR != null)       rows.push({ label: 'Resting HR',      val: data.restingHR + ' bpm' });
+      if (data.sleepPerformance != null)rows.push({ label: 'Sleep Perf.',     val: data.sleepPerformance + '%' });
+      if (data.strainScore != null)     rows.push({ label: 'Strain Score',    val: data.strainScore });
+      if (data.respiratoryRate != null) rows.push({ label: 'Respiratory Rate',val: data.respiratoryRate + ' br/min' });
+      if (data.dayStrain != null)       rows.push({ label: 'Day Strain',      val: data.dayStrain });
+    }
+
+    var html = '<div class="dp-header">Live Data</div><div class="dp-rows">';
+    rows.forEach(function (r) {
+      html += '<div class="data-row"><span class="data-row-label">' + r.label + '</span>'
+            + '<span class="data-row-val">' + r.val + '</span></div>';
+    });
+    html += '</div>';
+    el.innerHTML = html;
+  }
+
+  function renderAllCards() {
+    ensureCardsExist();
+    Object.keys(healthState.providers).forEach(function (pid) {
+      renderProviderCard(pid);
+    });
+  }
+
+  // ── Card DOM creation ────────────────────────────────────────────────────
+  function ensureCardsExist() {
+    var list = document.getElementById('provider-cards-list');
+    if (!list || list.dataset.healthInit) return;
+    list.dataset.healthInit = '1';
+
+    Object.keys(HEALTH_PROVIDERS).forEach(function (pid) {
+      // Cards already exist in HTML for all 4 providers; skip if already present
+      if (document.getElementById('card-' + pid)) return;
+
+      var p = HEALTH_PROVIDERS[pid];
+
+      var card = document.createElement('div');
+      card.id = 'card-' + pid;
+      card.className = 'provider-card';
+      card.innerHTML =
+        '<div class="pc-inner">'
+        + '<div class="pc-top">'
+        + '<div class="pc-badge" style="background:' + p.color + '18;border:1.5px solid ' + p.color + '28;font-size:22px;width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' + p.emoji + '</div>'
+        + '<div class="pc-info" style="flex:1;min-width:0;padding:0 12px;">'
+        +   '<div class="pc-name" style="font-weight:700;font-size:15px;">' + p.name + '</div>'
+        +   '<div class="pc-desc" style="font-size:12px;color:var(--text-3,#9CA3AF);margin-top:2px;line-height:1.4;">' + p.desc + '</div>'
+        +   '<div class="status-chip" style="margin-top:6px;font-size:12px;font-weight:600;">● Not connected</div>'
+        + '</div>'
+        + '</div>'
+        + '<div class="pc-actions" style="display:flex;gap:8px;align-items:center;margin-top:12px;">'
+        +   '<button class="connect-btn" style="flex:1;padding:8px 16px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;background:' + p.color + ';color:#fff;" onclick="connectProvider(\'' + pid + '\')">' + (pid === 'appleHealth' ? 'Connect' : 'Connect via OAuth') + '</button>'
+        +   '<button class="disconnect-btn" style="display:none;padding:8px 12px;border-radius:8px;border:1px solid var(--border,#E5E7EB);font-size:12px;font-weight:600;cursor:pointer;background:transparent;color:var(--text-2,#6B7280);" onclick="disconnectProvider(\'' + pid + '\')">Disconnect</button>'
+        + '</div>'
+        + '<div class="sync-time" style="font-size:11px;color:var(--text-3,#9CA3AF);margin-top:6px;" hidden></div>'
+        + '</div>';
+
+      list.appendChild(card);
+
+      var panel = document.createElement('div');
+      panel.id = 'panel-' + pid;
+      panel.className = 'data-panel';
+      panel.hidden = true;
+      panel.style.cssText = 'margin-top:0;padding:12px 16px;background:var(--surface-2,#F9FAFB);border-top:1px solid var(--border,#E5E7EB);font-size:13px;';
+      list.appendChild(panel);
+    });
+  }
+
+  // ── Connect / disconnect ─────────────────────────────────────────────────
+  function connectProvider(providerId) {
+    var provider = HEALTH_PROVIDERS[providerId];
+    var pState   = healthState.providers[providerId];
+    if (!provider || !pState || pState.connected || pState.connecting) return;
+
+    pState.connecting = true;
+    renderProviderCard(providerId);
+
+    var delay = providerId === 'appleHealth' ? 1500 : 2000;
+
+    if (providerId === 'appleHealth'
+        && global.webkit
+        && global.webkit.messageHandlers
+        && global.webkit.messageHandlers.nova360HealthKit) {
+      try {
+        global._nova360HealthKitCb = function (nativeData) {
+          finishConnect(providerId, nativeData || provider.simData);
+        };
+        global.webkit.messageHandlers.nova360HealthKit.postMessage({ action: 'requestPermissions' });
+        setTimeout(function () {
+          if (!healthState.providers[providerId].connected) {
+            finishConnect(providerId, provider.simData);
+          }
+        }, 6000);
+        return;
+      } catch (e) { /* fall through to simulated */ }
+    }
+
+    setTimeout(function () {
+      finishConnect(providerId, provider.simData);
+    }, delay);
+  }
+
+  function finishConnect(providerId, data) {
+    var pState = healthState.providers[providerId];
+    if (!pState) return;
+    pState.connected  = true;
+    pState.connecting = false;
+    pState.data       = data;
+    pState.lastSync   = Date.now();
+    saveHealthState();
+    renderProviderCard(providerId);
+    updateDashboardFromHealth();
+    updateNudgesBanner();
+    updateConnectedDevicesSummary();
+  }
+
+  function disconnectProvider(providerId) {
+    var pState = healthState.providers[providerId];
+    if (!pState) return;
+    pState.connected  = false;
+    pState.connecting = false;
+    pState.data       = null;
+    pState.lastSync   = null;
+    saveHealthState();
+    renderProviderCard(providerId);
+    updateDashboardFromHealth();
+    updateNudgesBanner();
+    updateConnectedDevicesSummary();
+  }
+
+  // ── Dashboard update ─────────────────────────────────────────────────────
+  function updateDashboardFromHealth() {
+    var providers = healthState.providers;
+    var connectedIds = Object.keys(providers).filter(function (pid) {
+      return providers[pid].connected && providers[pid].data;
+    });
+
+    if (!connectedIds.length) return;
+
+    // Best HRV (highest rmssd across connected providers)
+    var bestHrv = null;
+    connectedIds.forEach(function (pid) {
+      var d = providers[pid].data;
+      var v = d.hrv_rmssd || d.hrv || null;
+      if (v != null && (bestHrv === null || v > bestHrv)) bestHrv = v;
+    });
+
+    // Avg resting HR
+    var rhrValues = [];
+    connectedIds.forEach(function (pid) {
+      var d = providers[pid].data;
+      var v = d.restingHeartRate || d.restingHR || d.heartRate || null;
+      if (v != null) rhrValues.push(v);
+    });
+    var avgRhr = rhrValues.length
+      ? Math.round(rhrValues.reduce(function (a, b) { return a + b; }, 0) / rhrValues.length)
+      : null;
+
+    // Avg sleep score
+    var sleepScores = [];
+    connectedIds.forEach(function (pid) {
+      var d = providers[pid].data;
+      var v = d.sleepScore || d.sleepPerformance || null;
+      if (v != null) sleepScores.push(v);
+    });
+    var avgSleep = sleepScores.length
+      ? sleepScores.reduce(function (a, b) { return a + b; }, 0) / sleepScores.length
+      : null;
+
+    // Coherence estimate from HRV: (hrv_rmssd / 12) clamped 0-6
+    var coherence = null;
+    if (bestHrv !== null) {
+      coherence = Math.max(0, Math.min(6, bestHrv / 12));
+    }
+
+    // DOM updates
+    var hrvEl = document.getElementById('metric-hrv');
+    if (hrvEl && coherence !== null) hrvEl.textContent = coherence.toFixed(1);
+
+    var ptsEl = document.getElementById('metric-pts');
+    if (ptsEl && coherence !== null) ptsEl.textContent = Math.round(coherence * 55);
+
+    var bpmEl = document.getElementById('metric-bpm');
+    if (bpmEl && avgRhr !== null) bpmEl.textContent = avgRhr;
+
+    var recEl = document.getElementById('metric-records');
+    if (recEl) recEl.textContent = connectedIds.length;
+
+    // Score number
+    var scoreEl = document.getElementById('score-number');
+    if (scoreEl) {
+      var recovScores = [];
+      connectedIds.forEach(function (pid) {
+        var d = providers[pid].data;
+        var v = d.recoveryScore || null;
+        if (v != null) recovScores.push(v);
+      });
+      var avgRecov = recovScores.length
+        ? recovScores.reduce(function (a, b) { return a + b; }, 0) / recovScores.length
+        : null;
+
+      var combinedAvg = null;
+      var parts = [];
+      if (avgSleep  != null) parts.push(avgSleep);
+      if (avgRecov  != null) parts.push(avgRecov);
+      if (parts.length) combinedAvg = parts.reduce(function (a, b) { return a + b; }, 0) / parts.length;
+
+      if (combinedAvg !== null) {
+        var score = combinedAvg > 90 ? 99 : Math.round(Math.min(99, Math.max(60, combinedAvg)));
+        scoreEl.textContent = score;
+      }
+    }
+
+    // HRV chart SVG regeneration
+    if (coherence !== null && typeof global.drawChart === 'function') {
+      try { global.drawChart('7d'); } catch (e) {}
+    }
+    updateHrvChartFromCoherence(coherence);
+
+    // Legacy compat: if the nova360 system is also present, sync it
+    if (typeof global.updateDashboard === 'function') {
+      var legacyData = {};
+      connectedIds.forEach(function (pid) {
+        legacyData[pid] = providers[pid].data;
+      });
+      try { global.updateDashboard(legacyData); } catch (e) {}
+    }
+  }
+
+  function updateHrvChartFromCoherence(coherence) {
+    if (coherence === null) return;
+    var svgEl = document.getElementById('hrv-chart');
+    if (!svgEl) return;
+
+    var base = coherence;
+    var pts = [];
+    var count = 30;
+    for (var i = 0; i < count; i++) {
+      var noise = (Math.random() - 0.5) * 1.2;
+      var trend = Math.sin(i / (count / (2 * Math.PI))) * 0.4;
+      pts.push(Math.max(0.1, Math.min(6, base + noise + trend)));
+    }
+
+    var W = 280, H = 60, pad = 4;
+    var maxV = 6, minV = 0;
+    var xStep = (W - pad * 2) / (pts.length - 1);
+
+    function py(v) {
+      return pad + (1 - (v - minV) / (maxV - minV)) * (H - pad * 2);
+    }
+
+    var dPath = pts.map(function (v, i) {
+      return (i === 0 ? 'M' : 'L') + (pad + i * xStep).toFixed(1) + ',' + py(v).toFixed(1);
+    }).join(' ');
+
+    var color = coherence >= 4 ? '#22C55E' : coherence >= 2.5 ? '#F59E0B' : '#EF4444';
+
+    svgEl.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    svgEl.innerHTML =
+      '<defs><linearGradient id="hcg" x1="0" y1="0" x2="0" y2="1">'
+      + '<stop offset="0%" stop-color="' + color + '" stop-opacity="0.25"/>'
+      + '<stop offset="100%" stop-color="' + color + '" stop-opacity="0.02"/>'
+      + '</linearGradient></defs>'
+      + '<path d="' + dPath + ' L' + (pad + (pts.length - 1) * xStep).toFixed(1) + ',' + H + ' L' + pad + ',' + H + ' Z" fill="url(#hcg)"/>'
+      + '<path d="' + dPath + '" fill="none" stroke="' + color + '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
+  }
+
+  // ── Nudges / sources banner ──────────────────────────────────────────────
+  function updateNudgesBanner() {
+    var banner = document.getElementById('data-sources-banner');
+    if (!banner) return;
+
+    var providers = healthState.providers;
+    var connectedIds = Object.keys(providers).filter(function (pid) {
+      return providers[pid].connected;
+    });
+
+    if (!connectedIds.length) {
+      banner.innerHTML =
+        '<span class="sources-indicator sources-none">○ No devices connected —</span> '
+        + '<button class="sources-connect-btn" onclick="openConnectModal()">Connect now</button>';
+      return;
+    }
+
+    var latestSync = null;
+    connectedIds.forEach(function (pid) {
+      var t = providers[pid].lastSync;
+      if (t && (latestSync === null || t > latestSync)) latestSync = t;
+    });
+
+    var names = connectedIds.map(function (pid) {
+      return HEALTH_PROVIDERS[pid] ? HEALTH_PROVIDERS[pid].name : pid;
+    }).join(', ');
+
+    var syncTxt = latestSync ? ' · ' + fmtSyncTime(latestSync) : '';
+
+    banner.innerHTML =
+      '<span class="sources-indicator sources-live">● Live</span> '
+      + '<span class="sources-names">' + names + '</span>'
+      + '<span class="sources-sync">' + syncTxt + '</span>'
+      + ' <button class="sources-manage-btn" onclick="openConnectModal()">Manage</button>';
+  }
+
+  // ── Connected devices summary (Train screen) ─────────────────────────────
+  function updateConnectedDevicesSummary() {
+    var el = document.getElementById('connected-devices-summary');
+    if (!el) return;
+
+    var providers = healthState.providers;
+    var connectedIds = Object.keys(providers).filter(function (pid) {
+      return providers[pid].connected && providers[pid].data;
+    });
+
+    if (!connectedIds.length) {
+      el.innerHTML = '<span class="no-devices-txt" style="font-size:13px;color:var(--text-3,#9CA3AF);">No devices connected</span>';
+      return;
+    }
+
+    var chips = connectedIds.map(function (pid) {
+      var p    = HEALTH_PROVIDERS[pid];
+      var d    = providers[pid].data;
+      var metric = '';
+
+      if (pid === 'appleHealth') {
+        metric = 'HRV ' + (d.hrv || d.hrv_rmssd || '–') + ' ms';
+      } else if (pid === 'garmin') {
+        metric = 'Battery ' + (d.bodyBattery != null ? d.bodyBattery + '%' : '–');
+      } else if (pid === 'fitbit') {
+        metric = 'Sleep ' + (d.sleepScore != null ? d.sleepScore : '–');
+      } else if (pid === 'whoop') {
+        metric = 'Recovery ' + (d.recoveryScore != null ? d.recoveryScore + '%' : '–');
+      }
+
+      return '<div class="device-chip" style="display:inline-flex;align-items:center;gap:5px;'
+        + 'padding:5px 10px;border-radius:20px;font-size:12px;font-weight:600;'
+        + 'background:' + p.color + '18;color:' + p.color + ';margin:3px;">'
+        + '<span>' + p.emoji + '</span>'
+        + '<span>' + metric + '</span>'
+        + '</div>';
+    }).join('');
+
+    el.innerHTML = chips;
+  }
+
+  // ── Compat: expose legacy API names ─────────────────────────────────────
+  function _legacyCompatLayer() {
+    if (!global.nova360Connect)    global.nova360Connect    = connectProvider;
+    if (!global.nova360Disconnect) global.nova360Disconnect = disconnectProvider;
+    if (!global.nova360InitCards)  global.nova360InitCards  = renderAllCards;
+    if (!global.nova360ConnectionState) global.nova360ConnectionState = healthState.providers;
+  }
+
+  // ── Public API ────────────────────────────────────────────────────────────
+  global.healthState                   = healthState;
+  global.openConnectModal              = openConnectModal;
+  global.closeConnectModal             = closeConnectModal;
+  global.connectProvider               = connectProvider;
+  global.disconnectProvider            = disconnectProvider;
+  global.renderProviderCard            = renderProviderCard;
+  global.renderAllCards                = renderAllCards;
+  global.updateDashboardFromHealth     = updateDashboardFromHealth;
+  global.updateNudgesBanner            = updateNudgesBanner;
+  global.updateConnectedDevicesSummary = updateConnectedDevicesSummary;
+
+  // ── Toast notification ───────────────────────────────────────────────────
+  function showConnectToast(msg) {
+    var t = document.getElementById('connect-toast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'connect-toast';
+      t.style.cssText = 'position:fixed;bottom:calc(var(--sab,0px) + 80px);left:50%;transform:translateX(-50%) translateY(20px);'
+        + 'background:#111827;color:#fff;font-size:13px;font-weight:600;padding:10px 18px;border-radius:24px;'
+        + 'z-index:9999;opacity:0;transition:opacity 0.25s,transform 0.25s;white-space:nowrap;pointer-events:none;';
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.opacity = '1';
+    t.style.transform = 'translateX(-50%) translateY(0)';
+    clearTimeout(t._timer);
+    t._timer = setTimeout(function () {
+      t.style.opacity = '0';
+      t.style.transform = 'translateX(-50%) translateY(20px)';
+    }, 2800);
+  }
+
+  // ── Boot ─────────────────────────────────────────────────────────────────
+  loadHealthState();
+  _legacyCompatLayer();
+
+  document.addEventListener('DOMContentLoaded', function () {
+    loadHealthState();
+    renderAllCards();
+    renderAllTiles();
+    updateNudgesBanner();
+    updateConnectedDevicesSummary();
+    updateDashboardFromHealth();
+
+    // Modal close on backdrop click
+    var modal = document.getElementById('connect-modal');
+    if (modal) {
+      modal.addEventListener('click', function (e) {
+        if (e.target === modal) closeConnectModal();
+      });
+    }
+
+    // Keyboard close
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        var m = document.getElementById('connect-modal');
+        if (m && m.classList.contains('show')) closeConnectModal();
+      }
+    });
+  });
+
+}(window));
+
+// ── PWA Service Worker (offline shell caching) ──
+if ('serviceWorker' in navigator) {
+  const SW_SRC = `
+const CACHE = 'nova360-v1';
+const SHELL = [location.href];
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
+});
+self.addEventListener('activate', e => {
+  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
+});
+self.addEventListener('fetch', e => {
+  if (e.request.mode === 'navigate') {
+    e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
+  }
+});
+`;
+  const swBlob = new Blob([SW_SRC], { type: 'application/javascript' });
+  const swURL = URL.createObjectURL(swBlob);
+  navigator.serviceWorker.register(swURL, { scope: '/' }).catch(() => {});
+}
+
+// ── Native health bridge detection ──
+// iOS WKWebView: exposes window.webkit.messageHandlers.nova360HealthKit
+// Android WebView: exposes window.Android.getHealthConnectData
+window.NOVA360_NATIVE = {
+  isIOS: /iphone|ipad|ipod/i.test(navigator.userAgent),
+  isAndroid: /android/i.test(navigator.userAgent),
+  hasHealthKit: !!(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.nova360HealthKit),
+  hasHealthConnect: typeof window.Android !== 'undefined' && typeof window.Android.getHealthConnectData === 'function',
+};
+</script>
+</body>
+</html>
