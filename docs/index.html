@@ -1482,15 +1482,6 @@ body {
 
     <div class="px" style="margin-bottom:12px"><div class="section-title">All Training Sessions</div></div>
 
-    <div class="session-card" style="border-left-color:#7C3AED">
-      <div class="session-header">
-        <div><div class="session-type">Breathing</div><div class="session-title">Heart Coherence Breathing</div></div>
-        <div><div class="session-min" id="card-session-min">5</div><div class="session-min-lbl">min</div></div>
-      </div>
-      <div class="session-desc" id="card-session-desc">Guided resonant frequency breathing — inhale 4s · exhale 6s — to optimise HRV and enter a coherent state.</div>
-      <button class="session-btn" style="background:#7C3AED;color:#fff" onclick="openBreathing()">Start Session</button>
-    </div>
-
     <div class="session-card" style="border-left-color:#3B82F6">
       <div class="session-header">
         <div><div class="session-type">Focus</div><div class="session-title">Focus Enhancement</div></div>
@@ -1949,7 +1940,6 @@ function selectDuration(min, btn) {
   btn.classList.add('active');
   document.getElementById('rec-duration-val').textContent = min + ' min';
   document.getElementById('rec-benefit-val').textContent = breathBenefits[min] || 'HRV +12%';
-  document.getElementById('card-session-min').textContent = min;
 }
 
 const patternDescs = {
@@ -1966,10 +1956,6 @@ function selectPattern(inhale, hold, exhale, btn) {
   const key = `${inhale}:${hold}:${exhale}`;
   const desc = patternDescs[key] || `Inhale ${inhale}s · Exhale ${exhale}s`;
   document.getElementById('pattern-desc').textContent = desc;
-  // update session card desc
-  const holdStr = hold > 0 ? ` · Hold ${hold}s` : '';
-  document.getElementById('card-session-desc').textContent =
-    `Guided resonant frequency breathing — inhale ${inhale}s${holdStr} · exhale ${exhale}s — to optimise HRV and enter a coherent state.`;
 }
 
 function openBreathing() {
