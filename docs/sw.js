@@ -1,6 +1,6 @@
-// BUILD: 20260915T0840Z
-const CACHE_NAME = 'nova360-v3-20260915T0840Z';
-const SHELL_URLS = ['./', './manifest.json', './icon.svg'];
+// BUILD: 20260915T0850Z
+const CACHE_NAME = 'nova360-v3-20260915T0850Z';
+const SHELL_URLS = ['./', './manifest.json', './icon.svg', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 // Install – pre-cache shell then activate immediately
 self.addEventListener('install', (event) => {
@@ -20,8 +20,11 @@ self.addEventListener('activate', (event) => {
       )
       .then(() => self.clients.claim())
       .then(() =>
-        self.clients.matchAll({ includeUncontrolled: true }).then((clients) =>
-          clients.forEach((c) => c.postMessage({ type: 'SW_UPDATED' }))
+        self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) =>
+          Promise.all(clients.map((c) => {
+            c.postMessage({ type: 'SW_UPDATED' });
+            return ('navigate' in c) ? c.navigate(c.url).catch(function(){}) : Promise.resolve();
+          }))
         )
       )
   );
