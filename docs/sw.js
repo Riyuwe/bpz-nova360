@@ -1,4 +1,5 @@
-const CACHE_NAME = 'nova360-v2';
+// BUILD: 20260915T1800Z
+const CACHE_NAME = 'nova360-v3-20260915T1800Z';
 const PRECACHE_URLS = ['./'];
 
 // ---------------------------------------------------------------------------
@@ -28,7 +29,12 @@ self.addEventListener('activate', (event) => {
         )
       )
       .then(() => self.clients.claim())
+      .then(() => self.clients.matchAll({type:'window'}).then(cs=>cs.forEach(c=>c.postMessage({type:'SW_ACTIVATED'}))))
   );
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
 // ---------------------------------------------------------------------------
