@@ -23,7 +23,7 @@
 <style>
   :root { --sat: env(safe-area-inset-top); --sab: env(safe-area-inset-bottom); --sal: env(safe-area-inset-left); --sar: env(safe-area-inset-right); }
   body { padding-top: var(--sat, 0); padding-bottom: var(--sab, 0); padding-left: var(--sal, 0); padding-right: var(--sar, 0); }
-  .tabbar { padding-bottom: max(var(--sab, 0px), 8px); height: calc(var(--tab-h) + max(var(--sab, 0px), 0px)); }
+  .tabbar { padding-bottom: max(var(--sab, 0px), 8px); }
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -79,7 +79,7 @@ body {
   overflow: hidden;
   box-shadow: 0 0 0 1px rgba(0,0,0,0.08), 0 40px 80px rgba(0,0,0,0.18);
 }
-@media (max-width: 480px) {
+@media (max-width: 600px), (display-mode: standalone) {
   body { padding: 0; }
   html, body { height: 100%; }
   .device { border-radius: 0; height: 100%; min-height: unset; box-shadow: none; }
@@ -100,7 +100,7 @@ body {
 .tabbar {
   position: relative;
   width: 100%;
-  height: var(--tab-h);
+  height: calc(var(--tab-h) + max(var(--sab, 0px), 0px));
   background: var(--surface);
   border-top: 1px solid var(--border);
   display: flex;
@@ -120,9 +120,11 @@ body {
   padding: 8px 4px 10px;
   -webkit-tap-highlight-color: transparent;
 }
-.tab .tab-icon { font-size: 20px; line-height: 1; }
+.tab .tab-icon { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; color: var(--text-3); }
+.tab .tab-icon svg { width: 22px; height: 22px; display: block; }
+.tab.active .tab-icon { color: var(--accent); }
 .tab .tab-label { font-size: 9px; font-weight: 600; color: var(--text-3); letter-spacing: 0.3px; text-transform: uppercase; }
-.tab.active .tab-label { color: var(--accent-soft); }
+.tab.active .tab-label { color: var(--accent); }
 .tab.active .tab-dot {
   width: 4px; height: 4px; border-radius: 2px;
   background: var(--accent);
@@ -1740,28 +1742,28 @@ Intervention priority: Extend your peak coherence window into afternoon stress p
   <!-- ═══ TAB BAR ═══ -->
   <div class="tabbar">
     <button class="tab active" id="tab-dashboard" onclick="switchTab('dashboard')">
-      <span class="tab-icon">🏠</span>
+      <span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg></span>
       <span class="tab-label">Home</span>
       <div class="tab-dot"></div>
     </button>
     <button class="tab" id="tab-checkin" onclick="switchTab('checkin')">
-      <span class="tab-icon">✅</span>
+      <span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></span>
       <span class="tab-label">Check-In</span>
     </button>
     <button class="tab" id="tab-train" onclick="switchTab('train')">
-      <span class="tab-icon">🧠</span>
+      <span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
       <span class="tab-label">Train</span>
     </button>
     <button class="tab" id="tab-nudges" onclick="switchTab('nudges')">
-      <span class="tab-icon">💡</span>
+      <span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></span>
       <span class="tab-label">Nudges</span>
     </button>
     <button class="tab" id="tab-history" onclick="switchTab('history')">
-      <span class="tab-icon">📊</span>
+      <span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
       <span class="tab-label">History</span>
     </button>
     <button class="tab" id="tab-profile" onclick="switchTab('profile')">
-      <span class="tab-icon">👤</span>
+      <span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
       <span class="tab-label">Profile</span>
     </button>
   </div>
@@ -3224,7 +3226,7 @@ function setPeriod(key, btn) {
 
 // Version check: compare embedded build stamp against server version.json
 // Works for ALL users regardless of SW state, including those with stale cached HTML
-(function(){var _BV='20260915T0840Z';function _chkVer(){fetch('./version.json?_nc='+Math.floor(Math.random()*1e9),{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){if(d.v&&d.v!==_BV){var b=document.getElementById('update-banner');if(b){b.hidden=false;document.getElementById('update-now-btn').onclick=_doUpdate;}}}).catch(function(){});}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',_chkVer);}else{_chkVer();}})();
+(function(){var _BV='20260915T0845Z';function _chkVer(){fetch('./version.json?_nc='+Math.floor(Math.random()*1e9),{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){if(d.v&&d.v!==_BV){var b=document.getElementById('update-banner');if(b){b.hidden=false;document.getElementById('update-now-btn').onclick=_doUpdate;}}}).catch(function(){});}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',_chkVer);}else{_chkVer();}})();
 if('serviceWorker'in navigator){
   var _swRefreshing=false;
   var _doUpdate=function(){
