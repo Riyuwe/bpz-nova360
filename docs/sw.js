@@ -1,5 +1,5 @@
-// BUILD: 20260915T0835Z
-const CACHE_NAME = 'nova360-v3-20260915T0835Z';
+// BUILD: 20260915T0840Z
+const CACHE_NAME = 'nova360-v3-20260915T0840Z';
 const SHELL_URLS = ['./', './manifest.json', './icon.svg'];
 
 // Install – pre-cache shell then activate immediately

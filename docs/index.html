@@ -3224,17 +3224,39 @@ function setPeriod(key, btn) {
 
 // Version check: compare embedded build stamp against server version.json
 // Works for ALL users regardless of SW state, including those with stale cached HTML
-(function(){var _BV='20260915T0835Z';function _chkVer(){fetch('./version.json?_nc='+Math.floor(Math.random()*1e9),{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){if(d.v&&d.v!==_BV){var b=document.getElementById('update-banner');if(b){b.hidden=false;document.getElementById('update-now-btn').onclick=function(){window.location.reload(true);};}}}).catch(function(){});}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',_chkVer);}else{_chkVer();}})();
+(function(){var _BV='20260915T0840Z';function _chkVer(){fetch('./version.json?_nc='+Math.floor(Math.random()*1e9),{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){if(d.v&&d.v!==_BV){var b=document.getElementById('update-banner');if(b){b.hidden=false;document.getElementById('update-now-btn').onclick=_doUpdate;}}}).catch(function(){});}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',_chkVer);}else{_chkVer();}})();
 if('serviceWorker'in navigator){
   var _swRefreshing=false;
+  var _doUpdate=function(){
+  var btn=document.getElementById('update-now-btn');
+  if(btn){btn.textContent='Updating…';btn.disabled=true;}
+  var _reload=function(){window.location.reload();};
+  var _fallback=setTimeout(_reload,3000);
+  navigator.serviceWorker.addEventListener('controllerchange',function(){
+    clearTimeout(_fallback);
+    _reload();
+  },{once:true});
+  if('serviceWorker'in navigator){
+    navigator.serviceWorker.getRegistration('./').then(function(reg){
+      if(reg&&reg.waiting){
+        reg.waiting.postMessage({type:'SKIP_WAITING'});
+      } else if(reg){
+        reg.update().then(_reload).catch(_reload);
+      } else {
+        clearTimeout(_fallback);
+        _reload();
+      }
+    }).catch(function(){clearTimeout(_fallback);_reload();});
+  } else {
+    clearTimeout(_fallback);
+    _reload();
+  }
+};
   function _showUpdateBanner(worker){
     var b=document.getElementById('update-banner');
     if(!b)return;
     b.hidden=false;
-    document.getElementById('update-now-btn').onclick=function(){
-      worker.postMessage({type:'SKIP_WAITING'});
-      setTimeout(function(){window.location.reload(true);},400);
-    };
+    document.getElementById('update-now-btn').onclick=_doUpdate;
   }
   navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'}).then(function(reg){
     reg.update();
