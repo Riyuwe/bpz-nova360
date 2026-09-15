@@ -25,7 +25,6 @@
 <style>
   :root { --sat: env(safe-area-inset-top); --sab: env(safe-area-inset-bottom); --sal: env(safe-area-inset-left); --sar: env(safe-area-inset-right); }
   body { padding-top: var(--sat, 0); padding-bottom: var(--sab, 0); padding-left: var(--sal, 0); padding-right: var(--sar, 0); }
-  .tabbar { padding-bottom: max(var(--sab, 0px), 8px); }
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -51,7 +50,7 @@
   --text: #111827;
   --text-2: #4B5563;
   --text-3: #9CA3AF;
-  --tab-h: 68px;
+  --tab-h: 56px;
 }
 
 /* ── Reset ── */
@@ -125,11 +124,11 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 2px;
   cursor: pointer;
   border: none;
   background: transparent;
-  padding: 8px 4px 10px;
+  padding: 6px 4px 6px;
   -webkit-tap-highlight-color: transparent;
 }
 .tab .tab-icon { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; color: var(--text-3); }
@@ -199,7 +198,7 @@ body {
   border-radius: 20px;
   padding: 22px;
   display: flex; gap: 16px; align-items: center;
-  position: relative; overflow: hidden;
+  position: relative;
 }
 .score-card::before {
   content: ''; position: absolute; inset: 0;
@@ -210,9 +209,10 @@ body {
 .score-label { font-size: 11px; font-weight: 600; color: var(--text-3); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 4px; }
 .score-number {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 80px; font-weight: 700;
-  color: var(--accent); line-height: 0.9;
-  letter-spacing: -4px;
+  font-size: 76px; font-weight: 700;
+  color: var(--accent); line-height: 1;
+  letter-spacing: -3px;
+  padding-top: 2px;
 }
 .score-sub { font-size: 12px; color: var(--text-3); margin-top: 10px; }
 .score-ring {
@@ -560,7 +560,8 @@ body {
 .connect-modal {
   display: none;
   position: absolute;
-  inset: 0;
+  top: 0; left: 0; right: 0;
+  bottom: calc(var(--tab-h) + max(var(--sab, 0px), 0px));
   z-index: 300;
   background: var(--surface);
   flex-direction: column;
@@ -906,6 +907,15 @@ body {
 .connect-modal > .connect-modal-head + * { /* sub already handled */ }
 .provider-card { box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
 .connect-btn { font-size: 14px; letter-spacing: 0.2px; }
+.cmo-footer {
+  padding: 16px 24px 20px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-2);
+  line-height: 1.6;
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+}
 </style>
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
@@ -1509,19 +1519,38 @@ body {
 
     <div class="session-card" style="border-left-color:#3B82F6">
       <div class="session-header">
-        <div><div class="session-type">Focus</div><div class="session-title">Focus Enhancement</div></div>
-        <div><div class="session-min">10</div><div class="session-min-lbl">min</div></div>
+        <div><div class="session-type">Focus · Cognitive Priming</div><div class="session-title">Focus Enhancement</div></div>
+        <div><div class="session-min" style="color:#3B82F6">5</div><div class="session-min-lbl">min</div></div>
       </div>
-      <div class="session-desc">Neuro-feedback guided session to improve sustained attention and cognitive performance for study or work.</div>
+      <div class="session-desc">5-2-5 cognitive priming breath — activates prefrontal cortex, sharpens sustained attention and opens your peak performance window.</div>
+      <div style="margin-bottom:10px">
+        <div style="font-size:10px;font-weight:600;color:var(--text-3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:5px">Duration</div>
+        <div class="pill-row" id="focus-dur-picker">
+          <button class="dur-pill" onclick="selectSessionDuration('focus',1,this)">1 min</button>
+          <button class="dur-pill" onclick="selectSessionDuration('focus',3,this)">3 min</button>
+          <button class="dur-pill active" onclick="selectSessionDuration('focus',5,this)">5 min</button>
+          <button class="dur-pill" onclick="selectSessionDuration('focus',10,this)">10 min</button>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text-3);margin-bottom:8px">Pattern: Inhale 5s · Exhale 5s — classic resonant 0.1 Hz breathing</div>
       <button id="session-btn-focus" class="session-btn" style="background:#3B82F6;color:#fff" onclick="startSession('focus')">Start Session</button>
     </div>
 
     <div class="session-card" style="border-left-color:#10B981">
       <div class="session-header">
-        <div><div class="session-type">Recovery</div><div class="session-title">Stress Recovery Protocol</div></div>
-        <div><div class="session-min">10</div><div class="session-min-lbl">min</div></div>
+        <div><div class="session-type">Recovery · Parasympathetic Reset</div><div class="session-title">Stress Recovery Protocol</div></div>
+        <div><div class="session-min" style="color:#10B981">10</div><div class="session-min-lbl">min</div></div>
       </div>
-      <div class="session-desc">Parasympathetic activation session to lower cortisol, reduce anxiety and restore nervous system balance.</div>
+      <div class="session-desc">Extended exhale breathing (5-2-5) to lower cortisol, activate the parasympathetic nervous system and restore autonomic balance.</div>
+      <div style="margin-bottom:10px">
+        <div style="font-size:10px;font-weight:600;color:var(--text-3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:5px">Duration</div>
+        <div class="pill-row" id="recovery-dur-picker">
+          <button class="dur-pill" onclick="selectSessionDuration('recovery',3,this)">3 min</button>
+          <button class="dur-pill" onclick="selectSessionDuration('recovery',5,this)">5 min</button>
+          <button class="dur-pill active" onclick="selectSessionDuration('recovery',10,this)">10 min</button>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text-3);margin-bottom:8px">Pattern: Inhale 5s · Hold 2s · Exhale 5s — extended coherence reset</div>
       <button id="session-btn-recovery" class="session-btn" style="background:#10B981;color:#fff" onclick="startSession('recovery')">Start Session</button>
     </div>
 
@@ -2291,6 +2320,18 @@ function selectDuration(min, btn) {
   }
 }
 
+function selectSessionDuration(sessionKey, min, btn) {
+  // Update the REC_SESSIONS default duration for this session
+  if (REC_SESSIONS[sessionKey]) REC_SESSIONS[sessionKey].defaultDuration = min;
+  // Highlight the pill in its own picker row
+  var picker = document.getElementById(sessionKey + '-dur-picker');
+  if (picker) picker.querySelectorAll('.dur-pill').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  // Update the session-min display
+  var card = btn.closest('.session-card');
+  if (card) { var minEl = card.querySelector('.session-min'); if (minEl) minEl.textContent = min; }
+}
+
 const patternDescs = {
   '4:0:4': 'Inhale 4s · Exhale 4s — balanced calming breath',
   '4:0:6': 'Inhale 4s · Exhale 6s — resonant frequency for HRV optimisation',
@@ -2307,7 +2348,22 @@ function selectPattern(inhale, hold, exhale, btn) {
   document.getElementById('pattern-desc').textContent = desc;
 }
 
+const sessionTips = {
+  breathing: 'Resonant frequency breathing — synchronises heart and brain for peak HRV coherence.',
+  focus: 'Cognitive priming breath — activates prefrontal cortex and opens your peak performance window.',
+  recovery: 'Parasympathetic reset — lowers cortisol, reduces anxiety and restores nervous system balance.',
+};
+
 function openBreathing() {
+  // Configure session-specific display
+  var sesh = REC_SESSIONS[currentRecSession] || REC_SESSIONS.breathing;
+  var p = sesh.defaultPattern;
+  // If called from Focus/Recovery card, use that session's pattern
+  if (currentRecSession !== 'breathing') {
+    selectedInhale = p.inhale; selectedHold = p.hold; selectedExhale = p.exhale;
+    selectedDuration = sesh.defaultDuration;
+  }
+
   const pd = getPhaseDuration();
   breathPhase = 'inhale'; breathCount = pd.inhale; cycles = 0;
   breathSecondsLeft = selectedDuration * 60;
@@ -2315,10 +2371,19 @@ function openBreathing() {
   // pattern label
   const holdStr = selectedHold > 0 ? `-${selectedHold}` : '';
   document.getElementById('breath-pattern-label').textContent = `${selectedInhale}${holdStr}:${selectedExhale} breathing`;
+  // session title
+  var titleEl = document.querySelector('.breathing-title');
+  if (titleEl) titleEl.textContent = sesh.name;
   // tip
   const key = `${selectedInhale}:${selectedHold}:${selectedExhale}`;
-  document.getElementById('breath-tip').textContent =
-    (patternDescs[key] || `Inhale ${selectedInhale}s · Exhale ${selectedExhale}s`) + ' — to optimise HRV.';
+  var tipBase = patternDescs[key] || `Inhale ${selectedInhale}s · Exhale ${selectedExhale}s`;
+  document.getElementById('breath-tip').textContent = tipBase + ' — ' + (sessionTips[currentRecSession] || 'breathe with intention.');
+  // accent colour for ring
+  var accentColor = sesh.color || 'var(--accent)';
+  var breathRing = document.getElementById('breath-ring');
+  var breathInner = document.getElementById('breath-inner');
+  if (breathRing) breathRing.style.borderColor = accentColor;
+  if (breathInner) breathInner.style.background = accentColor + '22';
   document.getElementById('cycle-count').textContent = 0;
   document.getElementById('breathing-screen').classList.add('show');
   updateBreathUI();
@@ -3266,7 +3331,7 @@ var _doUpdate=function(){
 };
 // Version check: compare embedded build stamp against server version.json
 // Works for ALL users regardless of SW state, including those with stale cached HTML
-(function(){var _BV='20260915T1200Z';function _chkVer(){fetch('./version.json?_nc='+Math.floor(Math.random()*1e9),{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){if(d.v&&d.v!==_BV){var b=document.getElementById('update-banner');if(b){b.hidden=false;document.getElementById('update-now-btn').onclick=_doUpdate;}}}).catch(function(){});}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',_chkVer);}else{_chkVer();}})();
+(function(){var _BV='20260915T1400Z';function _chkVer(){fetch('./version.json?_nc='+Math.floor(Math.random()*1e9),{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){if(d.v&&d.v!==_BV){var b=document.getElementById('update-banner');if(b){b.hidden=false;document.getElementById('update-now-btn').onclick=_doUpdate;}}}).catch(function(){});}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',_chkVer);}else{_chkVer();}})();
 if('serviceWorker'in navigator){
   var _swRefreshing=false;
   function _showUpdateBanner(worker){
@@ -3295,6 +3360,13 @@ if('serviceWorker'in navigator){
       _swRefreshing=true;
       var b=document.getElementById('update-banner');
       if(b)b.hidden=true;
+      location.href=location.href;
+    }
+  });
+  // SW broadcasts SW_ACTIVATED when it claims clients — also triggers reload
+  navigator.serviceWorker.addEventListener('message',function(evt){
+    if(evt.data&&evt.data.type==='SW_ACTIVATED'&&!_swRefreshing){
+      _swRefreshing=true;
       location.href=location.href;
     }
   });
