@@ -82,21 +82,31 @@ body {
   box-shadow: 0 0 0 1px rgba(0,0,0,0.08), 0 40px 80px rgba(0,0,0,0.18);
 }
 @media (max-width: 600px), (display-mode: standalone) {
-  body { padding: 0; }
-  html, body { height: 100%; }
-  .device { border-radius: 0; height: 100%; min-height: unset; box-shadow: none; }
+  html { height: 100%; overflow: hidden; }
+  body {
+    padding: 0;
+    height: 100%;
+    min-height: unset;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    overflow: hidden;
+  }
+  .device { border-radius: 0; flex: 1; min-height: 0; max-width: 100%; box-shadow: none; }
 }
 
 /* ── Screen ── */
 .screen {
   display: none;
   flex: 1;
+  min-height: 0; /* iOS fix: allows flex child to shrink + scroll internally */
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   padding-bottom: calc(var(--tab-h) + 8px);
   scrollbar-width: none;
 }
 .screen::-webkit-scrollbar { display: none; }
-.screen.active { display: block; }
+.screen.active { display: flex; flex-direction: column; }
 
 /* ── Tab Bar ── */
 .tabbar {
@@ -903,13 +913,13 @@ body {
 </head>
 <body>
 
+<div class="device">
+
 <!-- ── PWA Update Banner ──────────────────────────────────────────────────── -->
-<div id="update-banner" hidden style="position:fixed;top:0;left:0;right:0;z-index:99999;display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top,0px) + 12px) 20px 12px;background:#6D28D9;color:#fff;font-family:'Manrope',sans-serif;font-size:14px;font-weight:600;box-shadow:0 2px 12px rgba(0,0,0,.3);gap:12px">
+<div id="update-banner" hidden style="flex-shrink:0;width:100%;z-index:99999;display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top,0px) + 12px) 20px 12px;background:#6D28D9;color:#fff;font-family:'Manrope',sans-serif;font-size:14px;font-weight:600;box-shadow:0 2px 12px rgba(0,0,0,.3);gap:12px">
   <span>✨ New update available</span>
   <button id="update-now-btn" style="background:#fff;color:#6D28D9;border:none;border-radius:20px;padding:7px 18px;font-family:'Manrope',sans-serif;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">Update Now</button>
 </div>
-
-<div class="device">
 
   <!-- ═══════════════════════════════════════════════════════════════════
      NOVA360 — Device Connection Modal
@@ -3226,21 +3236,19 @@ function setPeriod(key, btn) {
 
 }(window));
 
-// Version check: compare embedded build stamp against server version.json
-// Works for ALL users regardless of SW state, including those with stale cached HTML
-(function(){var _BV='20260915T0850Z';function _chkVer(){fetch('./version.json?_nc='+Math.floor(Math.random()*1e9),{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){if(d.v&&d.v!==_BV){var b=document.getElementById('update-banner');if(b){b.hidden=false;document.getElementById('update-now-btn').onclick=_doUpdate;}}}).catch(function(){});}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',_chkVer);}else{_chkVer();}})();
-if('serviceWorker'in navigator){
-  var _swRefreshing=false;
-  var _doUpdate=function(){
+// _doUpdate: defined unconditionally so onclick is never undefined
+var _doUpdate=function(){
+  var b=document.getElementById('update-banner');
+  if(b)b.hidden=true;
   var btn=document.getElementById('update-now-btn');
   if(btn){btn.textContent='Updating…';btn.disabled=true;}
-  var _reload=function(){window.location.reload();};
+  var _reload=function(){location.href=location.href;};
   var _fallback=setTimeout(_reload,3000);
-  navigator.serviceWorker.addEventListener('controllerchange',function(){
-    clearTimeout(_fallback);
-    _reload();
-  },{once:true});
   if('serviceWorker'in navigator){
+    navigator.serviceWorker.addEventListener('controllerchange',function(){
+      clearTimeout(_fallback);
+      _reload();
+    },{once:true});
     navigator.serviceWorker.getRegistration('./').then(function(reg){
       if(reg&&reg.waiting){
         reg.waiting.postMessage({type:'SKIP_WAITING'});
@@ -3256,6 +3264,11 @@ if('serviceWorker'in navigator){
     _reload();
   }
 };
+// Version check: compare embedded build stamp against server version.json
+// Works for ALL users regardless of SW state, including those with stale cached HTML
+(function(){var _BV='20260915T1200Z';function _chkVer(){fetch('./version.json?_nc='+Math.floor(Math.random()*1e9),{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){if(d.v&&d.v!==_BV){var b=document.getElementById('update-banner');if(b){b.hidden=false;document.getElementById('update-now-btn').onclick=_doUpdate;}}}).catch(function(){});}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',_chkVer);}else{_chkVer();}})();
+if('serviceWorker'in navigator){
+  var _swRefreshing=false;
   function _showUpdateBanner(worker){
     var b=document.getElementById('update-banner');
     if(!b)return;
@@ -3278,7 +3291,12 @@ if('serviceWorker'in navigator){
   }).catch(function(){});
   // When the new SW takes control, reload to get fresh HTML
   navigator.serviceWorker.addEventListener('controllerchange',function(){
-    if(!_swRefreshing){_swRefreshing=true;window.location.reload();}
+    if(!_swRefreshing){
+      _swRefreshing=true;
+      var b=document.getElementById('update-banner');
+      if(b)b.hidden=true;
+      location.href=location.href;
+    }
   });
 }
 

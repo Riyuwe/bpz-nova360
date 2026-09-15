@@ -1,5 +1,5 @@
-// BUILD: 20260915T0850Z
-const CACHE_NAME = 'nova360-v3-20260915T0850Z';
+// BUILD: 20260915T1200Z
+const CACHE_NAME = 'nova360-v3-20260915T1200Z';
 const SHELL_URLS = ['./', './manifest.json', './icon.svg', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 // Install – pre-cache shell then activate immediately
@@ -7,7 +7,7 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => cache.addAll(SHELL_URLS))
-      .then(() => self.skipWaiting())
+      // skipWaiting removed: page must receive user consent via SKIP_WAITING message
   );
 });
 
@@ -19,14 +19,7 @@ self.addEventListener('activate', (event) => {
         Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
       )
       .then(() => self.clients.claim())
-      .then(() =>
-        self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) =>
-          Promise.all(clients.map((c) => {
-            c.postMessage({ type: 'SW_UPDATED' });
-            return ('navigate' in c) ? c.navigate(c.url).catch(function(){}) : Promise.resolve();
-          }))
-        )
-      )
+      // Removed c.navigate() calls: double-navigation with controllerchange listener in index.html
   );
 });
 
