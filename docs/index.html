@@ -13,8 +13,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="NOVA360">
-<!-- Apple touch icons (SVG data-URI purple brain icon) -->
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='114' fill='%236D28D9'/%3E%3Ctext x='256' y='340' font-size='280' text-anchor='middle' fill='white'%3E🧠%3C/text%3E%3C/svg%3E">
+<link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png">
+<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+<link rel="icon" type="image/svg+xml" href="./icon.svg">
 
 <!-- Web App Manifest (inline data-URI) -->
 <link rel="manifest" href="./manifest.json">
@@ -3226,7 +3228,7 @@ function setPeriod(key, btn) {
 
 // Version check: compare embedded build stamp against server version.json
 // Works for ALL users regardless of SW state, including those with stale cached HTML
-(function(){var _BV='20260915T0845Z';function _chkVer(){fetch('./version.json?_nc='+Math.floor(Math.random()*1e9),{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){if(d.v&&d.v!==_BV){var b=document.getElementById('update-banner');if(b){b.hidden=false;document.getElementById('update-now-btn').onclick=_doUpdate;}}}).catch(function(){});}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',_chkVer);}else{_chkVer();}})();
+(function(){var _BV='20260915T0850Z';function _chkVer(){fetch('./version.json?_nc='+Math.floor(Math.random()*1e9),{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){if(d.v&&d.v!==_BV){var b=document.getElementById('update-banner');if(b){b.hidden=false;document.getElementById('update-now-btn').onclick=_doUpdate;}}}).catch(function(){});}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',_chkVer);}else{_chkVer();}})();
 if('serviceWorker'in navigator){
   var _swRefreshing=false;
   var _doUpdate=function(){

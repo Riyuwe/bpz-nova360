@@ -1,6 +1,6 @@
-// BUILD: 20260915T0845Z
-const CACHE_NAME = 'nova360-v3-20260915T0845Z';
-const SHELL_URLS = ['./', './manifest.json', './icon.svg'];
+// BUILD: 20260915T0850Z
+const CACHE_NAME = 'nova360-v3-20260915T0850Z';
+const SHELL_URLS = ['./', './manifest.json', './icon.svg', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 // Install – pre-cache shell then activate immediately
 self.addEventListener('install', (event) => {
