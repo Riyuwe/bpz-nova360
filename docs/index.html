@@ -342,6 +342,18 @@ body {
   width: 100%; background: var(--accent); color: #fff; border: none; border-radius: 12px;
   padding: 14px; font-family: 'Manrope', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer;
 }
+.pill-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.dur-pill, .pat-pill {
+  padding: 6px 14px; border-radius: 20px; border: 1.5px solid var(--border);
+  background: var(--surface2); color: var(--text-2); font-family: 'Manrope', sans-serif;
+  font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.18s;
+}
+.dur-pill.active, .pat-pill.active {
+  background: var(--accent-muted); border-color: var(--accent); color: var(--accent);
+}
+.dur-pill:hover:not(.active), .pat-pill:hover:not(.active) {
+  border-color: var(--accent); color: var(--accent);
+}
 
 .session-card {
   margin: 0 20px 10px;
@@ -1440,9 +1452,30 @@ body {
       <div class="recommended-title">Heart Coherence Breathing</div>
       <div class="recommended-desc">Based on your recent check-in data, resonant frequency breathing will help optimise your HRV and bring you into a high-coherence state.</div>
       <div class="stat-row">
-        <div class="stat-item"><div class="stat-value">10 min</div><div class="stat-label">Duration</div></div>
+        <div class="stat-item"><div class="stat-value" id="rec-duration-val">5 min</div><div class="stat-label">Duration</div></div>
         <div class="stat-item"><div class="stat-value">Easy</div><div class="stat-label">Difficulty</div></div>
-        <div class="stat-item"><div class="stat-value">HRV +12%</div><div class="stat-label">Benefit</div></div>
+        <div class="stat-item"><div class="stat-value" id="rec-benefit-val">HRV +8%</div><div class="stat-label">Benefit</div></div>
+      </div>
+      <!-- Duration picker -->
+      <div style="margin-bottom:10px">
+        <div style="font-size:11px;font-weight:600;color:var(--text-2);letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px">Duration</div>
+        <div class="pill-row" id="duration-picker">
+          <button class="dur-pill" data-min="1" onclick="selectDuration(1,this)">1 min</button>
+          <button class="dur-pill" data-min="3" onclick="selectDuration(3,this)">3 min</button>
+          <button class="dur-pill active" data-min="5" onclick="selectDuration(5,this)">5 min</button>
+          <button class="dur-pill" data-min="10" onclick="selectDuration(10,this)">10 min</button>
+        </div>
+      </div>
+      <!-- Breathing pattern picker -->
+      <div style="margin-bottom:14px">
+        <div style="font-size:11px;font-weight:600;color:var(--text-2);letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px">Breathing Pattern</div>
+        <div class="pill-row" id="pattern-picker">
+          <button class="pat-pill" data-inhale="4" data-hold="0" data-exhale="4" onclick="selectPattern(4,0,4,this)">4:4</button>
+          <button class="pat-pill active" data-inhale="4" data-hold="0" data-exhale="6" onclick="selectPattern(4,0,6,this)">4:6</button>
+          <button class="pat-pill" data-inhale="5" data-hold="0" data-exhale="5" onclick="selectPattern(5,0,5,this)">5:5</button>
+          <button class="pat-pill" data-inhale="5" data-hold="2" data-exhale="5" onclick="selectPattern(5,2,5,this)">5-2-5</button>
+        </div>
+        <div style="font-size:12px;color:var(--text-2);margin-top:5px" id="pattern-desc">Inhale 4s · Exhale 6s — resonant frequency for HRV optimisation</div>
       </div>
       <button class="start-btn" onclick="openBreathing()">▶ Start Now</button>
     </div>
@@ -1452,9 +1485,9 @@ body {
     <div class="session-card" style="border-left-color:#7C3AED">
       <div class="session-header">
         <div><div class="session-type">Breathing</div><div class="session-title">Heart Coherence Breathing</div></div>
-        <div><div class="session-min">10</div><div class="session-min-lbl">min</div></div>
+        <div><div class="session-min" id="card-session-min">5</div><div class="session-min-lbl">min</div></div>
       </div>
-      <div class="session-desc">Guided resonant frequency breathing at 5 seconds in, 5 seconds out to optimise HRV and enter a coherent state.</div>
+      <div class="session-desc" id="card-session-desc">Guided resonant frequency breathing — inhale 4s · exhale 6s — to optimise HRV and enter a coherent state.</div>
       <button class="session-btn" style="background:#7C3AED;color:#fff" onclick="openBreathing()">Start Session</button>
     </div>
 
@@ -1487,15 +1520,19 @@ body {
     <!-- Breathing overlay -->
     <div class="breathing-screen" id="breathing-screen">
       <div class="breathing-title">Heart Coherence Breathing</div>
+      <div style="display:flex;gap:12px;justify-content:center;margin-bottom:6px">
+        <div style="font-size:13px;color:var(--text-2)">⏱ <span id="breath-time-left">5:00</span></div>
+        <div style="font-size:13px;color:var(--text-2)">· <span id="breath-pattern-label">4:6 breathing</span></div>
+      </div>
       <div class="cycles-count">Cycles completed: <span id="cycle-count">0</span></div>
       <div class="breath-ring-wrap">
         <div class="breath-ring-outer" id="breath-ring"></div>
         <div class="breath-ring-inner" id="breath-inner">
           <div class="breath-phase" id="breath-phase">Breathe In</div>
-          <div class="breath-count" id="breath-count">5</div>
+          <div class="breath-count" id="breath-count">4</div>
         </div>
       </div>
-      <div class="breathing-tip">Breathe at 5 seconds in, 5 seconds out to optimise your heart rate variability and enter a coherent state.</div>
+      <div class="breathing-tip" id="breath-tip">Inhale 4s · Exhale 6s — resonant frequency to optimise HRV and enter a coherent state.</div>
       <button class="end-btn" onclick="closeBreathing()">End Session</button>
     </div>
   </div><!-- /train -->
@@ -1887,18 +1924,75 @@ function submitCheckin() {
 // ── Breathing exercise ──
 let breathTimer = null;
 let breathPhase = 'inhale';
-let breathCount = 5;
+let breathCount = 4;
 let cycles = 0;
+let breathSecondsLeft = 5 * 60;
+
+// Selected config (defaults: 5 min, 4:6 pattern)
+let selectedDuration = 5;
+let selectedInhale = 4;
+let selectedHold = 0;
+let selectedExhale = 6;
 
 const phaseColors = { inhale:'#7C3AED', hold:'#F59E0B', exhale:'#10B981' };
 const phaseLabels = { inhale:'Breathe In', hold:'Hold', exhale:'Breathe Out' };
-const phaseDuration = { inhale:5, hold:2, exhale:5 };
+
+function getPhaseDuration() {
+  return { inhale: selectedInhale, hold: selectedHold, exhale: selectedExhale };
+}
+
+const breathBenefits = {1:'HRV +4%', 3:'HRV +8%', 5:'HRV +12%', 10:'HRV +18%'};
+
+function selectDuration(min, btn) {
+  selectedDuration = min;
+  document.querySelectorAll('.dur-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('rec-duration-val').textContent = min + ' min';
+  document.getElementById('rec-benefit-val').textContent = breathBenefits[min] || 'HRV +12%';
+  document.getElementById('card-session-min').textContent = min;
+}
+
+const patternDescs = {
+  '4:0:4': 'Inhale 4s · Exhale 4s — balanced calming breath',
+  '4:0:6': 'Inhale 4s · Exhale 6s — resonant frequency for HRV optimisation',
+  '5:0:5': 'Inhale 5s · Exhale 5s — classic resonant breathing at 0.1 Hz',
+  '5:2:5': 'Inhale 5s · Hold 2s · Exhale 5s — extended coherence pattern',
+};
+
+function selectPattern(inhale, hold, exhale, btn) {
+  selectedInhale = inhale; selectedHold = hold; selectedExhale = exhale;
+  document.querySelectorAll('.pat-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const key = `${inhale}:${hold}:${exhale}`;
+  const desc = patternDescs[key] || `Inhale ${inhale}s · Exhale ${exhale}s`;
+  document.getElementById('pattern-desc').textContent = desc;
+  // update session card desc
+  const holdStr = hold > 0 ? ` · Hold ${hold}s` : '';
+  document.getElementById('card-session-desc').textContent =
+    `Guided resonant frequency breathing — inhale ${inhale}s${holdStr} · exhale ${exhale}s — to optimise HRV and enter a coherent state.`;
+}
 
 function openBreathing() {
-  breathPhase = 'inhale'; breathCount = 5; cycles = 0;
+  const pd = getPhaseDuration();
+  breathPhase = 'inhale'; breathCount = pd.inhale; cycles = 0;
+  breathSecondsLeft = selectedDuration * 60;
+  document.getElementById('breath-time-left').textContent = fmtTime(breathSecondsLeft);
+  // pattern label
+  const holdStr = selectedHold > 0 ? `-${selectedHold}` : '';
+  document.getElementById('breath-pattern-label').textContent = `${selectedInhale}${holdStr}:${selectedExhale} breathing`;
+  // tip
+  const key = `${selectedInhale}:${selectedHold}:${selectedExhale}`;
+  document.getElementById('breath-tip').textContent =
+    (patternDescs[key] || `Inhale ${selectedInhale}s · Exhale ${selectedExhale}s`) + ' — to optimise HRV.';
+  document.getElementById('cycle-count').textContent = 0;
   document.getElementById('breathing-screen').classList.add('show');
   updateBreathUI();
   breathTimer = setInterval(tickBreath, 1000);
+}
+
+function fmtTime(s) {
+  const m = Math.floor(s / 60), sec = s % 60;
+  return m + ':' + (sec < 10 ? '0' : '') + sec;
 }
 
 function closeBreathing() {
@@ -1907,17 +2001,28 @@ function closeBreathing() {
 }
 
 function tickBreath() {
+  breathSecondsLeft = Math.max(0, breathSecondsLeft - 1);
+  document.getElementById('breath-time-left').textContent = fmtTime(breathSecondsLeft);
+  if (breathSecondsLeft === 0) { closeBreathing(); return; }
+
+  const pd = getPhaseDuration();
   breathCount--;
   if (breathCount <= 0) {
-    if (breathPhase === 'inhale') breathPhase = 'hold';
-    else if (breathPhase === 'hold') breathPhase = 'exhale';
-    else { breathPhase = 'inhale'; cycles++; document.getElementById('cycle-count').textContent = cycles; }
-    breathCount = phaseDuration[breathPhase];
+    if (breathPhase === 'inhale') {
+      breathPhase = pd.hold > 0 ? 'hold' : 'exhale';
+    } else if (breathPhase === 'hold') {
+      breathPhase = 'exhale';
+    } else {
+      breathPhase = 'inhale'; cycles++;
+      document.getElementById('cycle-count').textContent = cycles;
+    }
+    breathCount = pd[breathPhase];
   }
   updateBreathUI();
 }
 
 function updateBreathUI() {
+  const pd = getPhaseDuration();
   const color = phaseColors[breathPhase];
   document.getElementById('breath-phase').textContent = phaseLabels[breathPhase];
   document.getElementById('breath-phase').style.color = color;
@@ -1929,10 +2034,10 @@ function updateBreathUI() {
   inner.style.background = color + '22';
   if (breathPhase === 'inhale') {
     ring.style.transform = 'scale(1.35)';
-    ring.style.transition = `transform ${phaseDuration.inhale}s ease-in-out, border-color 0.4s`;
+    ring.style.transition = `transform ${pd.inhale}s ease-in-out, border-color 0.4s`;
   } else if (breathPhase === 'exhale') {
     ring.style.transform = 'scale(1)';
-    ring.style.transition = `transform ${phaseDuration.exhale}s ease-in-out, border-color 0.4s`;
+    ring.style.transition = `transform ${pd.exhale}s ease-in-out, border-color 0.4s`;
   } else {
     ring.style.transition = 'border-color 0.4s';
   }
