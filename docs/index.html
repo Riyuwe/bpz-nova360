@@ -1489,7 +1489,7 @@ body {
         <div><div class="session-min">10</div><div class="session-min-lbl">min</div></div>
       </div>
       <div class="session-desc">Neuro-feedback guided session to improve sustained attention and cognitive performance for study or work.</div>
-      <button class="session-btn" style="background:var(--green-muted);color:var(--green)">✓ Completed</button>
+      <button id="session-btn-focus" class="session-btn" style="background:#3B82F6;color:#fff" onclick="startSession('focus')">Start Session</button>
     </div>
 
     <div class="session-card" style="border-left-color:#10B981">
@@ -1498,7 +1498,7 @@ body {
         <div><div class="session-min">10</div><div class="session-min-lbl">min</div></div>
       </div>
       <div class="session-desc">Parasympathetic activation session to lower cortisol, reduce anxiety and restore nervous system balance.</div>
-      <button class="session-btn" style="background:#10B981;color:#fff" onclick="openBreathing()">Start Session</button>
+      <button id="session-btn-recovery" class="session-btn" style="background:#10B981;color:#fff" onclick="startSession('recovery')">Start Session</button>
     </div>
 
     <div class="connect-card" id="train-connect-card">
@@ -1926,6 +1926,45 @@ function submitCheckin() {
   document.getElementById('thankful-input').value = '';
 }
 
+// ── Daily Session Completion Tracking ────────────────────────────────────────
+function todayKey() {
+  var d = new Date();
+  return 'nova360_done_' + d.getFullYear() + '_' + (d.getMonth()+1) + '_' + d.getDate();
+}
+
+function loadTodayCompletions() {
+  try { return JSON.parse(localStorage.getItem(todayKey()) || '[]'); } catch(e) { return []; }
+}
+
+function markSessionComplete(sessionKey) {
+  if (!sessionKey) return;
+  var done = loadTodayCompletions();
+  if (!done.includes(sessionKey)) { done.push(sessionKey); }
+  try { localStorage.setItem(todayKey(), JSON.stringify(done)); } catch(e) {}
+  renderSessionButtons(done);
+}
+
+function renderSessionButtons(done) {
+  done = done || loadTodayCompletions();
+  var sessions = { focus: 'session-btn-focus', recovery: 'session-btn-recovery' };
+  var colors   = { focus: '#3B82F6', recovery: '#10B981' };
+  Object.keys(sessions).forEach(function(key) {
+    var btn = document.getElementById(sessions[key]);
+    if (!btn) return;
+    if (done.includes(key)) {
+      btn.style.background = 'var(--green-muted)';
+      btn.style.color = 'var(--green)';
+      btn.textContent = '✓ Completed';
+      btn.onclick = null;
+    } else {
+      btn.style.background = colors[key];
+      btn.style.color = '#fff';
+      btn.textContent = 'Start Session';
+      btn.onclick = (function(k){ return function(){ startSession(k); }; })(key);
+    }
+  });
+}
+
 // ── McCraty Psychophysiological Recommendation Engine ────────────────────────
 // Sessions: breathing = HRV coherence baseline
 //           focus    = cognitive priming (pre-performance coherence loading)
@@ -2270,6 +2309,12 @@ function fmtTime(s) {
 function closeBreathing() {
   clearInterval(breathTimer); breathTimer = null;
   document.getElementById('breathing-screen').classList.remove('show');
+  markSessionComplete(currentRecSession);
+}
+
+function startSession(sessionKey) {
+  currentRecSession = sessionKey || currentRecSession;
+  openBreathing();
 }
 
 function tickBreath() {
@@ -3146,6 +3191,7 @@ function setPeriod(key, btn) {
     updateConnectedDevicesSummary();
     updateDashboardFromHealth();
     computeRecommendation();
+    renderSessionButtons();
 
     // Modal close on backdrop click
     var modal = document.getElementById('connect-modal');
