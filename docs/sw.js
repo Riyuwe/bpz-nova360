@@ -1,5 +1,5 @@
-// BUILD: 20260915T0821Z
-const CACHE_NAME = 'nova360-v3-20260915T0821Z';
+// BUILD: 20260915T0830Z
+const CACHE_NAME = 'nova360-v3-20260915T0830Z';
 const SHELL_URLS = ['./', './manifest.json', './icon.svg'];
 
 // Install – pre-cache shell then activate immediately
@@ -73,3 +73,10 @@ async function cacheFirst(request) {
     throw _;
   }
 }
+
+// Allow the page to trigger skipWaiting so the update banner can activate the new SW
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});

@@ -898,6 +898,13 @@ body {
   <meta http-equiv="Expires" content="0">
 </head>
 <body>
+
+<!-- ── PWA Update Banner ──────────────────────────────────────────────────── -->
+<div id="update-banner" hidden style="position:fixed;top:0;left:0;right:0;z-index:99999;display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:#6D28D9;color:#fff;font-family:'Manrope',sans-serif;font-size:14px;font-weight:600;box-shadow:0 2px 12px rgba(0,0,0,.3);gap:12px">
+  <span>✨ New update available</span>
+  <button id="update-now-btn" style="background:#fff;color:#6D28D9;border:none;border-radius:20px;padding:7px 18px;font-family:'Manrope',sans-serif;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">Update Now</button>
+</div>
+
 <div class="device">
 
   <!-- ═══════════════════════════════════════════════════════════════════
@@ -3215,7 +3222,35 @@ function setPeriod(key, btn) {
 
 }(window));
 
-if('serviceWorker'in navigator){navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'}).then(function(reg){reg.update();}).catch(function(){});var _swRefreshing=false;navigator.serviceWorker.addEventListener('controllerchange',function(){if(!_swRefreshing){_swRefreshing=true;window.location.reload();}});navigator.serviceWorker.addEventListener('message',function(e){if(e.data&&e.data.type==='SW_UPDATED'&&!_swRefreshing){_swRefreshing=true;window.location.reload();}});}
+if('serviceWorker'in navigator){
+  var _swRefreshing=false;
+  function _showUpdateBanner(worker){
+    var b=document.getElementById('update-banner');
+    if(!b)return;
+    b.hidden=false;
+    document.getElementById('update-now-btn').onclick=function(){
+      worker.postMessage({type:'SKIP_WAITING'});
+    };
+  }
+  navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'}).then(function(reg){
+    reg.update();
+    // New SW already waiting (installed on a previous visit)
+    if(reg.waiting)_showUpdateBanner(reg.waiting);
+    // New SW installs during this session
+    reg.addEventListener('updatefound',function(){
+      var nw=reg.installing;
+      nw.addEventListener('statechange',function(){
+        if(nw.state==='installed'&&navigator.serviceWorker.controller){
+          _showUpdateBanner(nw);
+        }
+      });
+    });
+  }).catch(function(){});
+  // When the new SW takes control, reload to get fresh HTML
+  navigator.serviceWorker.addEventListener('controllerchange',function(){
+    if(!_swRefreshing){_swRefreshing=true;window.location.reload();}
+  });
+}
 
 // ── Native health bridge detection ──
 // iOS WKWebView: exposes window.webkit.messageHandlers.nova360HealthKit
