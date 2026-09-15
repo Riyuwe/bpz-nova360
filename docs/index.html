@@ -1477,6 +1477,7 @@ body {
         </div>
         <div style="font-size:12px;color:var(--text-2);margin-top:5px" id="pattern-desc">Inhale 4s · Exhale 6s — resonant frequency for HRV optimisation</div>
       </div>
+      <div id="rec-signals" style="font-size:11px;color:var(--text-3);margin-bottom:10px;line-height:1.5"></div>
       <button class="start-btn" onclick="openBreathing()">▶ Start Now</button>
     </div>
 
@@ -1903,13 +1904,295 @@ function buildSummary() {
 }
 
 function submitCheckin() {
+  // Persist check-in for recommendation engine
+  try {
+    localStorage.setItem('nova360_checkin', JSON.stringify({
+      overall: selectedRating,
+      sleep:  catRatings.sleep  || null,
+      energy: catRatings.energy || null,
+      focus:  catRatings.focus  || null,
+      stress: catRatings.stress || null,
+      mood:   catRatings.mood   || null,
+      ts: Date.now()
+    }));
+  } catch(e) {}
   alert('Check-in Complete! 🎉\nYour daily brain performance check-in has been recorded. Keep up the great work!');
+  computeRecommendation();
   goStep(1);
   selectedRating = null;
   document.querySelectorAll('.rating-btn').forEach(b => b.classList.remove('active'));
   Object.keys(catRatings).forEach(k => delete catRatings[k]);
   document.querySelectorAll('.cat-num').forEach(b => b.classList.remove('active'));
   document.getElementById('thankful-input').value = '';
+}
+
+// ── McCraty Psychophysiological Recommendation Engine ────────────────────────
+// Sessions: breathing = HRV coherence baseline
+//           focus    = cognitive priming (pre-performance coherence loading)
+//           recovery = parasympathetic activation / allostatic reset
+const REC_SESSIONS = {
+  breathing: {
+    name: 'Heart Coherence Breathing',
+    type: 'Coherence Training',
+    benefit: 'HRV Coherence',
+    color: '#7C3AED',
+    defaultPattern: { inhale:4, hold:0, exhale:6 },
+    defaultDuration: 5,
+    difficulty: 'Easy',
+  },
+  focus: {
+    name: 'Focus Enhancement',
+    type: 'Cognitive Priming',
+    benefit: 'Cognitive Peak',
+    color: '#3B82F6',
+    defaultPattern: { inhale:5, hold:0, exhale:5 },
+    defaultDuration: 5,
+    difficulty: 'Moderate',
+  },
+  recovery: {
+    name: 'Stress Recovery Protocol',
+    type: 'Parasympathetic Reset',
+    benefit: 'Nervous System Reset',
+    color: '#10B981',
+    defaultPattern: { inhale:5, hold:2, exhale:5 },
+    defaultDuration: 10,
+    difficulty: 'Easy',
+  },
+};
+
+let currentRecSession = 'breathing';
+
+function scoreRecommendation() {
+  // ── Biometric signals from connected health apps ──
+  var providers = (typeof healthState !== 'undefined') ? healthState.providers : {};
+  var connectedIds = Object.keys(providers).filter(function(pid) {
+    return providers[pid].connected && providers[pid].data;
+  });
+  var bestHrv = null, stressVals = [], sleepVals = [], rhrVals = [];
+  var bodyBattery = null, readiness = null;
+  connectedIds.forEach(function(pid) {
+    var d = providers[pid].data;
+    var hrv = d.hrv_rmssd || d.hrv || null;
+    if (hrv !== null && (bestHrv === null || hrv > bestHrv)) bestHrv = hrv;
+    if (d.stressLevel != null) stressVals.push(d.stressLevel);
+    if (d.sleepScore != null) sleepVals.push(d.sleepScore);
+    if (d.sleepPerformance != null) sleepVals.push(d.sleepPerformance);
+    var rhr = d.restingHeartRate || d.restingHR || d.heartRate || null;
+    if (rhr != null) rhrVals.push(rhr);
+    if (d.bodyBattery != null && bodyBattery === null) bodyBattery = d.bodyBattery;
+    if (d.readiness != null && readiness === null) readiness = d.readiness;
+    if (d.recoveryScore != null && readiness === null) readiness = d.recoveryScore;
+  });
+  var avgStress = stressVals.length ? stressVals.reduce(function(a,b){return a+b;},0)/stressVals.length : null;
+  var avgSleep  = sleepVals.length  ? sleepVals.reduce(function(a,b){return a+b;},0)/sleepVals.length  : null;
+  var avgRhr    = rhrVals.length    ? rhrVals.reduce(function(a,b){return a+b;},0)/rhrVals.length      : null;
+  var coherence = bestHrv !== null ? Math.max(0, Math.min(6, bestHrv / 12)) : null;
+
+  // ── Daily check-in signals (persisted from last submit) ──
+  var ci = {};
+  try { ci = JSON.parse(localStorage.getItem('nova360_checkin') || '{}'); } catch(e) {}
+  // Only use check-in if it's from today
+  if (ci.ts && (Date.now() - ci.ts) > 86400000) ci = {};
+  var ciOverall = ci.overall || null;
+  var ciSleep   = ci.sleep   || null;
+  var ciEnergy  = ci.energy  || null;
+  var ciFocus   = ci.focus   || null;
+  var ciStress  = ci.stress  || null;
+  var ciMood    = ci.mood    || null;
+
+  // ── 360° Overview pillars (read from DOM) ──
+  // Pillars are rendered as bar widths — read their current values
+  var pillarBars = document.querySelectorAll('.pillar-score');
+  var pillarMap  = {};
+  var pillarKeys = ['sleep','activity','nutrition','stress','health','screen'];
+  pillarBars.forEach(function(el, i) {
+    if (pillarKeys[i]) pillarMap[pillarKeys[i]] = parseInt(el.textContent) || null;
+  });
+
+  // ── Score each session (0-100) ──
+  var scores  = { breathing: 40, focus: 20, recovery: 15 };
+  var signals = [];
+
+  // HRV coherence (primary McCraty signal)
+  if (coherence !== null) {
+    if (coherence < 1.5) {
+      scores.breathing += 30; scores.recovery += 20;
+      signals.push('Very low HRV coherence (' + coherence.toFixed(1) + '/6)');
+    } else if (coherence < 2.5) {
+      scores.breathing += 20; scores.recovery += 10;
+      signals.push('Low HRV coherence (' + coherence.toFixed(1) + '/6)');
+    } else if (coherence < 4.0) {
+      scores.focus += 25; scores.breathing += 5;
+      signals.push('Moderate coherence — cognitive window open');
+    } else {
+      scores.focus += 30; scores.breathing += 10;
+      signals.push('High coherence (' + coherence.toFixed(1) + '/6) — peak window');
+    }
+  } else if (!connectedIds.length) {
+    scores.breathing += 10; // no device data → daily coherence practice
+  }
+
+  // Autonomic stress (provider data)
+  if (avgStress !== null) {
+    if (avgStress > 60) {
+      scores.recovery += 25; scores.breathing += 15;
+      signals.push('Elevated autonomic stress (' + Math.round(avgStress) + ')');
+    } else if (avgStress > 35) {
+      scores.breathing += 10;
+    }
+  }
+
+  // Resting HR elevation
+  if (avgRhr !== null && avgRhr > 68) {
+    scores.recovery += 20;
+    signals.push('Elevated resting HR (' + Math.round(avgRhr) + ' bpm)');
+  }
+
+  // Sleep quality
+  if (avgSleep !== null) {
+    if (avgSleep < 60)      { scores.recovery += 15; signals.push('Poor sleep (' + Math.round(avgSleep) + '%)'); }
+    else if (avgSleep < 75) { scores.breathing += 10; }
+    else                    { scores.focus += 10; }
+  }
+  if (pillarMap.sleep !== null && pillarMap.sleep < 70) { scores.recovery += 8; scores.breathing += 5; }
+
+  // Body battery / readiness
+  if (bodyBattery !== null && bodyBattery < 40) {
+    scores.recovery += 15; signals.push('Low Body Battery (' + bodyBattery + ')');
+  }
+  if (readiness !== null) {
+    if (readiness >= 80)     { scores.focus += 15; signals.push('High readiness (' + readiness + ')'); }
+    else if (readiness < 50) { scores.recovery += 20; scores.breathing += 10; signals.push('Low readiness (' + readiness + ')'); }
+  }
+
+  // Check-in: stress
+  if (ciStress !== null) {
+    if (ciStress >= 4) { scores.recovery += 15; scores.breathing += 10; signals.push('High self-rated stress'); }
+    else if (ciStress <= 2) { scores.focus += 10; }
+  }
+  // Check-in: energy
+  if (ciEnergy !== null) {
+    if (ciEnergy >= 4) { scores.focus += 15; }
+    else if (ciEnergy <= 2) { scores.recovery += 15; scores.breathing += 5; signals.push('Low energy'); }
+  }
+  // Check-in: focus
+  if (ciFocus !== null && ciFocus <= 2) { scores.focus += 20; signals.push('Low self-rated focus'); }
+  // Check-in: mood
+  if (ciMood !== null && ciMood <= 2)   { scores.breathing += 15; signals.push('Low mood detected'); }
+  // Check-in: sleep
+  if (ciSleep !== null && ciSleep <= 2) { scores.recovery += 10; scores.breathing += 5; }
+  // Check-in: overall
+  if (ciOverall !== null) {
+    if (ciOverall <= 2) { scores.breathing += 15; scores.recovery += 10; }
+    else if (ciOverall >= 4) { scores.focus += 10; }
+  }
+
+  // 360° Overview: stress pillar (higher = better stress management, lower = needs attention)
+  if (pillarMap.stress !== null) {
+    if (pillarMap.stress < 60) { scores.breathing += 12; scores.recovery += 10; }
+    else if (pillarMap.stress > 80) { scores.focus += 8; }
+  }
+
+  var winner = 'breathing';
+  if (scores.focus    > scores[winner]) winner = 'focus';
+  if (scores.recovery > scores[winner]) winner = 'recovery';
+
+  var hasData = connectedIds.length > 0 || Object.keys(ci).length > 0;
+  return { session: winner, scores: scores, signals: signals.slice(0,2), coherence: coherence, hasData: hasData };
+}
+
+function buildRationale(result) {
+  var coherence = result.coherence;
+  var signals   = result.signals;
+  var session   = result.session;
+
+  if (session === 'breathing') {
+    if (coherence !== null && coherence < 1.5) {
+      return 'HRV coherence ratio ' + coherence.toFixed(1) + '/6 indicates significant autonomic dysregulation. McCraty (2015) shows resonant frequency breathing rapidly shifts the nervous system toward parasympathetic dominance and restores cardiac coherence.';
+    } else if (coherence !== null && coherence < 2.5) {
+      return 'HRV coherence (' + coherence.toFixed(1) + '/6) is below the high-performance threshold of 3.5+. Resonant frequency breathing at 0.1 Hz synchronises your cardiac, nervous and hormonal systems — the psychophysiological signature of peak performance (McCraty et al., 2009).';
+    } else if (signals.length) {
+      return 'Your data signals ' + signals[0].toLowerCase() + '. Daily coherence training reinforces heart-brain synchronisation, enhances emotional self-regulation and builds cognitive resilience (McCraty & Shaffer, 2015).';
+    } else {
+      return 'Based on your profile, resonant frequency breathing will optimise HRV and elevate your coherence ratio — the foundation of mental clarity, decision-making and emotional regulation.';
+    }
+  } else if (session === 'focus') {
+    if (coherence !== null && coherence >= 2.5) {
+      return 'Coherence baseline (' + coherence.toFixed(1) + '/6) is primed for cognitive work. A 5-minute pre-performance coherence session will maximise prefrontal cortex activation and open your peak cognitive window (McCraty & Childre, 2010).';
+    } else {
+      return 'Your check-in profile shows cognitive readiness. Resonant breathing pre-loads the heart-brain feedback loop — amplifying sustained attention, working memory and decision speed (McCraty et al., 2009).';
+    }
+  } else {
+    if (signals.length) {
+      return 'Biometric data shows ' + signals[0].toLowerCase() + '. This parasympathetic activation protocol reduces allostatic load and cortisol, restoring autonomic balance through the baroreflex pathways described by McCraty & Shaffer (2015).';
+    } else {
+      return 'Your physiological state calls for nervous system recovery. This protocol activates the parasympathetic branch, lowers resting HR and cortisol, and rebuilds your HRV coherence baseline.';
+    }
+  }
+}
+
+function setPickersForSession(sesh) {
+  // Duration
+  var durBtn = document.querySelector('.dur-pill[data-min="' + sesh.defaultDuration + '"]');
+  if (durBtn) {
+    document.querySelectorAll('.dur-pill').forEach(function(b){ b.classList.remove('active'); });
+    durBtn.classList.add('active');
+    selectedDuration = sesh.defaultDuration;
+  }
+  // Pattern
+  var p = sesh.defaultPattern;
+  var patBtn = document.querySelector('.pat-pill[data-inhale="' + p.inhale + '"][data-hold="' + p.hold + '"][data-exhale="' + p.exhale + '"]');
+  if (patBtn) {
+    document.querySelectorAll('.pat-pill').forEach(function(b){ b.classList.remove('active'); });
+    patBtn.classList.add('active');
+    selectedInhale = p.inhale; selectedHold = p.hold; selectedExhale = p.exhale;
+    var key = p.inhale + ':' + p.hold + ':' + p.exhale;
+    var pdesc = document.getElementById('pattern-desc');
+    if (pdesc) pdesc.textContent = patternDescs[key] || 'Inhale ' + p.inhale + 's · Exhale ' + p.exhale + 's';
+  }
+}
+
+function computeRecommendation() {
+  var result  = scoreRecommendation();
+  var sesh    = REC_SESSIONS[result.session];
+  currentRecSession = result.session;
+
+  // Update card title + description
+  var titleEl = document.querySelector('.recommended-title');
+  if (titleEl) titleEl.textContent = sesh.name;
+
+  var descEl = document.querySelector('.recommended-desc');
+  if (descEl) descEl.textContent = buildRationale(result);
+
+  // Update stat row
+  var durEl = document.getElementById('rec-duration-val');
+  if (durEl) durEl.textContent = sesh.defaultDuration + ' min';
+
+  var difItems = document.querySelectorAll('.stat-item');
+  if (difItems[1]) difItems[1].querySelector('.stat-value').textContent = sesh.difficulty;
+
+  var benEl = document.getElementById('rec-benefit-val');
+  if (benEl) benEl.textContent = sesh.benefit;
+
+  // Update accent color on the card badge
+  var badge = document.querySelector('.recommended-card .badge');
+  if (badge) badge.style.background = sesh.color + '20';
+
+  // Data signal strip
+  var sigEl = document.getElementById('rec-signals');
+  if (sigEl) {
+    var sigText = result.hasData && result.signals.length
+      ? result.signals[0]
+      : 'No device data — recommending daily coherence practice';
+    sigEl.textContent = '📊 ' + sigText;
+    // Show provider count if any
+    var provCount = Object.keys((typeof healthState !== 'undefined' ? healthState.providers : {}))
+      .filter(function(pid){ return (typeof healthState !== 'undefined') && healthState.providers[pid].connected; }).length;
+    if (provCount > 0) sigEl.textContent += ' · ' + provCount + ' device' + (provCount > 1 ? 's' : '') + ' connected';
+  }
+
+  // Set pickers for this session
+  setPickersForSession(sesh);
 }
 
 // ── Breathing exercise ──
@@ -1939,7 +2222,10 @@ function selectDuration(min, btn) {
   document.querySelectorAll('.dur-pill').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('rec-duration-val').textContent = min + ' min';
-  document.getElementById('rec-benefit-val').textContent = breathBenefits[min] || 'HRV +12%';
+  // Only update HRV benefit text for the coherence/breathing session
+  if (currentRecSession === 'breathing') {
+    document.getElementById('rec-benefit-val').textContent = breathBenefits[min] || 'HRV +12%';
+  }
 }
 
 const patternDescs = {
@@ -2677,6 +2963,11 @@ function setPeriod(key, btn) {
     }
     updateHrvChartFromCoherence(coherence);
 
+    // Re-run recommendation engine with updated biometric data
+    if (typeof global.computeRecommendation === 'function') {
+      try { global.computeRecommendation(); } catch (e) {}
+    }
+
     // Legacy compat: if the nova360 system is also present, sync it
     if (typeof global.updateDashboard === 'function') {
       var legacyData = {};
@@ -2854,6 +3145,7 @@ function setPeriod(key, btn) {
     updateNudgesBanner();
     updateConnectedDevicesSummary();
     updateDashboardFromHealth();
+    computeRecommendation();
 
     // Modal close on backdrop click
     var modal = document.getElementById('connect-modal');
