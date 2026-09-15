@@ -1,5 +1,5 @@
-// BUILD: 20260915T1400Z
-const CACHE_NAME = 'nova360-v3-20260915T1400Z';
+// BUILD: 20260915T1600Z
+const CACHE_NAME = 'nova360-v3-20260915T1600Z';
 const SHELL_URLS = ['./', './manifest.json', './icon.svg', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 // Install – pre-cache shell then skip waiting so stale clients get the fix immediately

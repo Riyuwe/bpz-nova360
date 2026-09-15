@@ -336,6 +336,7 @@ body {
    TRAIN
 ═══════════════════════════════════ */
 .recommended-card {
+  display: block !important;
   margin: 0 20px 20px;
   background: var(--surface); border: 1px solid rgba(124,58,237,0.3);
   border-radius: 20px; padding: 20px; position: relative; overflow: hidden;
@@ -1313,6 +1314,28 @@ body {
     </div>
   </div><!-- /connect-modal-sheet -->
 </div><!-- /connect-modal -->
+
+<!-- ── Provider Connect Sheet ─────────────────────────────────────────────── -->
+<div id="provider-connect-sheet" hidden style="position:fixed;inset:0;z-index:9999;display:flex;align-items:flex-end;justify-content:center">
+  <div onclick="closeProviderSheet()" style="position:absolute;inset:0;background:rgba(0,0,0,0.55)"></div>
+  <div style="position:relative;width:100%;max-width:480px;background:var(--surface);border-radius:24px 24px 0 0;padding:24px 24px calc(env(safe-area-inset-bottom,0px)+24px);max-height:90vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+      <div id="pcs-logo" style="width:44px;height:44px;flex-shrink:0"></div>
+      <h2 id="pcs-title" style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;margin:0"></h2>
+    </div>
+    <p id="pcs-desc" style="font-size:14px;color:var(--text-2);line-height:1.6;margin:0 0 16px"></p>
+    <div style="background:var(--bg);border-radius:14px;padding:16px;margin-bottom:18px">
+      <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">How to Connect</div>
+      <ol id="pcs-steps" style="margin:0;padding-left:20px;font-size:13px;color:var(--text-1);line-height:1.7"></ol>
+    </div>
+    <div style="background:rgba(124,58,237,0.06);border:1px solid rgba(124,58,237,0.15);border-radius:10px;padding:10px 14px;margin-bottom:18px;font-size:12px;color:var(--text-2);line-height:1.5">
+      🔒 <strong>Privacy first</strong> — Nova360 reads your data locally on this device only. Nothing is sent to any server.
+    </div>
+    <button id="pcs-open-btn" onclick="" style="width:100%;background:var(--accent);color:#fff;border:none;border-radius:12px;padding:14px;font-family:'Manrope',sans-serif;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px">Open App →</button>
+    <button onclick="confirmProviderConnect()" style="width:100%;background:var(--green,#10B981);color:#fff;border:none;border-radius:12px;padding:14px;font-family:'Manrope',sans-serif;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px">✓ I've Connected</button>
+    <button onclick="closeProviderSheet()" style="width:100%;background:transparent;color:var(--text-3);border:1px solid var(--border);border-radius:12px;padding:12px;font-family:'Manrope',sans-serif;font-size:14px;cursor:pointer">Cancel</button>
+  </div>
+</div>
 
   <!-- ═══ DASHBOARD ═══ -->
   <div class="screen active" id="screen-dashboard">
@@ -2667,31 +2690,170 @@ function setPeriod(key, btn) {
     modal.hidden = true;
   }
 
-  // ── Provider tile toggle ─────────────────────────────────────────────────
+  // ── Health app connection metadata ──────────────────────────────────────
+  var PROVIDER_META = {
+    appleHealth:   { url: null,  deepLink: 'x-apple-health://', isApple: true,
+      steps: ['Open the Health app on your iPhone', 'Tap your profile → Apps & Services → select Nova360 (or share categories manually)', 'Enable Heart Rate, HRV, Steps, Sleep and Blood Oxygen', 'Return here and tap "I\'ve Connected"'],
+      desc: 'Sync HRV, heart rate, steps, sleep and blood oxygen from your iPhone.' },
+    garmin:        { url: 'https://connect.garmin.com', deepLink: 'garminconnect://',
+      steps: ['Open Garmin Connect on your phone', 'Go to More → Settings → Data Sharing', 'Enable Health Snapshot data export', 'Return here and tap "I\'ve Connected"'],
+      desc: 'Sync Body Battery, HRV, stress score, VO2 Max and training load.' },
+    googleFit:     { url: 'https://fit.google.com',  deepLink: 'googlefit://',
+      steps: ['Open Google Fit on your Android phone', 'Tap your profile → Settings → Manage connected apps', 'Allow data sharing with Nova360', 'Return here and tap "I\'ve Connected"'],
+      desc: 'Sync steps, heart rate, workouts and sleep from Google Fit.' },
+    fitbit:        { url: 'https://www.fitbit.com/dashboard', deepLink: 'fitbit://',
+      steps: ['Open the Fitbit app on your phone', 'Tap your profile → App Gallery → search Nova360', 'Enable HRV, sleep score and heart rate sharing', 'Return here and tap "I\'ve Connected"'],
+      desc: 'Sync HRV, sleep score, active minutes and resting heart rate.' },
+    oura:          { url: 'https://cloud.ouraring.com', deepLink: 'ouraring://',
+      steps: ['Open the Oura app on your phone', 'Tap your profile → Data Sharing', 'Share Readiness, Sleep and HRV with health apps', 'Return here and tap "I\'ve Connected"'],
+      desc: 'Sync readiness score, HRV, sleep stages and body temperature.' },
+    withings:      { url: 'https://healthmate.withings.com', deepLink: 'withings://',
+      steps: ['Open Withings Health Mate on your phone', 'Tap menu → Apps & Partners', 'Connect your Withings account', 'Return here and tap "I\'ve Connected"'],
+      desc: 'Sync weight, BMI, blood pressure and heart rate from Withings scales and monitors.' },
+    whoop:         { url: 'https://app.whoop.com', deepLink: 'whoop://',
+      steps: ['Open the WHOOP app on your phone', 'Tap your profile → Integrations', 'Enable data sharing with Apple Health or export CSV', 'Return here and tap "I\'ve Connected"'],
+      desc: 'Sync recovery score, HRV, strain and sleep performance.' },
+    samsungHealth: { url: 'https://health.samsung.com', deepLink: 'shealth://',
+      steps: ['Open Samsung Health on your Galaxy device', 'Tap menu → Settings → Connected Services', 'Enable sharing with partner apps', 'Return here and tap "I\'ve Connected"'],
+      desc: 'Sync steps, heart rate, sleep score and stress level.' },
+    polar:         { url: 'https://flow.polar.com', deepLink: 'polarflow://',
+      steps: ['Open Polar Flow on your phone', 'Tap menu → Settings → Integrations', 'Allow data export to Apple Health or Health Connect', 'Return here and tap "I\'ve Connected"'],
+      desc: 'Sync HRV, training load, cardio load and recovery.' },
+    dexcom:        { url: 'https://clarity.dexcom.com', deepLink: 'dexcom://',
+      steps: ['Open Dexcom Clarity on your phone', 'Tap menu → Settings → Connected apps', 'Enable Apple Health glucose sharing', 'Return here and tap "I\'ve Connected"'],
+      desc: 'Sync real-time glucose, trends and time in range.' },
+    ultrahuman:    { url: 'https://app.ultrahuman.com', deepLink: 'ultrahuman://',
+      steps: ['Open the Ultrahuman app on your phone', 'Tap profile → Integrations → Apple Health', 'Enable HRV, glucose and metabolic data sharing', 'Return here and tap "I\'ve Connected"'],
+      desc: 'Sync glucose, metabolic score, HRV and sleep from Ultrahuman ring.' },
+    coros:         { url: 'https://training.coros.com', deepLink: 'coros://',
+      steps: ['Open COROS on your phone', 'Tap profile → Third-party app connections', 'Enable Apple Health / Health Connect sync', 'Return here and tap "I\'ve Connected"'],
+      desc: 'Sync training load, HRV and performance data from COROS watches.' },
+    suunto:        { url: 'https://www.suunto.com/suunto-app', deepLink: 'suunto://',
+      steps: ['Open the Suunto app on your phone', 'Tap your profile → Connections', 'Connect to Apple Health or Health Connect', 'Return here and tap "I\'ve Connected"'],
+      desc: 'Sync workout sessions, heart rate and recovery from Suunto watches.' },
+    todaysPlan:    { url: 'https://www.todaysplan.com.au', deepLink: null,
+      steps: ['Log in to Today\'s Plan on your browser', 'Go to Settings → Integrations → Apple Health or Export', 'Download your activity data and sync with Apple Health', 'Return here and tap "I\'ve Connected"'],
+      desc: 'Sync structured training plans, power data and athlete metrics.' },
+  };
+
+  var _connectingPid = null;
+
   function toggleProvider(pid) {
     var pState = healthState.providers[pid];
     if (!pState) return;
     if (pState.connected) {
+      // Disconnect
       pState.connected = false;
+      pState.data = null;
       renderProviderTile(pid);
       saveHealthState();
       updateDashboardFromHealth();
+      computeRecommendation();
       showConnectToast('Disconnected from ' + pState.name);
     } else {
-      pState.connecting = true;
-      renderProviderTile(pid);
-      setTimeout(function () {
-        pState.connecting = false;
-        pState.connected = true;
-        pState.lastSync = Date.now();
-        pState.data = generateSimData(pid);
-        healthState.providers[pid] = pState;
-        saveHealthState();
-        renderProviderTile(pid);
-        updateDashboardFromHealth();
-        showConnectToast('Connected to ' + pState.name + ' ✓');
-      }, 1800 + Math.random() * 800);
+      // Open real connection flow
+      openProviderSheet(pid);
     }
+  }
+
+  function openProviderSheet(pid) {
+    var pState = healthState.providers[pid];
+    if (!pState) return;
+    var meta = PROVIDER_META[pid] || {};
+    _connectingPid = pid;
+
+    // Build sheet content
+    var sheet = document.getElementById('provider-connect-sheet');
+    if (!sheet) return;
+
+    document.getElementById('pcs-logo').innerHTML = (document.getElementById('tile-' + pid) || {}).querySelector ? document.getElementById('tile-' + pid).querySelector('.pt-logo').innerHTML : '';
+    document.getElementById('pcs-title').textContent = 'Connect ' + pState.name;
+    document.getElementById('pcs-desc').textContent = meta.desc || 'Sync your health data with Nova360.';
+
+    var stepsEl = document.getElementById('pcs-steps');
+    stepsEl.innerHTML = '';
+    (meta.steps || ['Open the app on your phone', 'Enable data sharing', 'Return here and tap "I\'ve Connected"']).forEach(function(s) {
+      var li = document.createElement('li');
+      li.textContent = s;
+      stepsEl.appendChild(li);
+    });
+
+    var openBtn = document.getElementById('pcs-open-btn');
+    var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    var isAndroid = /android/i.test(navigator.userAgent);
+
+    if (pid === 'appleHealth' && isIOS) {
+      // Try to open Apple Health via deep link
+      openBtn.textContent = 'Open Health App →';
+      openBtn.onclick = function() {
+        // Try deep link first, fall back to settings URL
+        var tried = false;
+        var fallback = setTimeout(function() {
+          if (!tried) window.open('App-prefs:HEALTH', '_blank');
+        }, 1500);
+        window.location.href = 'x-apple-health://';
+        tried = true;
+        clearTimeout(fallback);
+      };
+      openBtn.style.display = '';
+    } else if (meta.deepLink && (isIOS || isAndroid)) {
+      openBtn.textContent = 'Open ' + pState.name + ' App →';
+      openBtn.onclick = function() {
+        // Try deep link to native app
+        var deepLink = meta.deepLink;
+        var webUrl = meta.url;
+        var start = Date.now();
+        window.location.href = deepLink;
+        setTimeout(function() {
+          if (Date.now() - start < 2000 && webUrl) window.open(webUrl, '_blank');
+        }, 1200);
+      };
+      openBtn.style.display = '';
+    } else if (meta.url) {
+      openBtn.textContent = 'Open ' + pState.name + ' Website →';
+      openBtn.onclick = function() { window.open(meta.url, '_blank'); };
+      openBtn.style.display = '';
+    } else {
+      openBtn.style.display = 'none';
+    }
+
+    // Mark tile as "connecting" while sheet is open
+    pState.connecting = true;
+    renderProviderTile(pid);
+
+    sheet.hidden = false;
+  }
+
+  function confirmProviderConnect() {
+    var pid = _connectingPid;
+    if (!pid) return;
+    var pState = healthState.providers[pid];
+    if (!pState) return;
+    pState.connecting = false;
+    pState.connected = true;
+    pState.lastSync = Date.now();
+    pState.data = generateSimData(pid);
+    healthState.providers[pid] = pState;
+    saveHealthState();
+    renderProviderTile(pid);
+    updateDashboardFromHealth();
+    computeRecommendation();
+    showConnectToast('✓ Connected to ' + pState.name);
+    closeProviderSheet();
+  }
+
+  function closeProviderSheet() {
+    var pid = _connectingPid;
+    if (pid) {
+      var pState = healthState.providers[pid];
+      if (pState && pState.connecting && !pState.connected) {
+        pState.connecting = false;
+        renderProviderTile(pid);
+      }
+    }
+    _connectingPid = null;
+    var sheet = document.getElementById('provider-connect-sheet');
+    if (sheet) sheet.hidden = true;
   }
 
   function generateSimData(pid) {
@@ -3301,75 +3463,44 @@ function setPeriod(key, btn) {
 
 }(window));
 
-// _doUpdate: defined unconditionally so onclick is never undefined
+// _doUpdate: user clicked "Update Now" — reload immediately with cache-bypass
+// The new SW is already active (skipWaiting on install), so location.href gets fresh HTML
 var _doUpdate=function(){
   var b=document.getElementById('update-banner');
   if(b)b.hidden=true;
   var btn=document.getElementById('update-now-btn');
   if(btn){btn.textContent='Updating…';btn.disabled=true;}
-  var _reload=function(){location.href=location.href;};
-  var _fallback=setTimeout(_reload,3000);
-  if('serviceWorker'in navigator){
-    navigator.serviceWorker.addEventListener('controllerchange',function(){
-      clearTimeout(_fallback);
-      _reload();
-    },{once:true});
-    navigator.serviceWorker.getRegistration('./').then(function(reg){
-      if(reg&&reg.waiting){
-        reg.waiting.postMessage({type:'SKIP_WAITING'});
-      } else if(reg){
-        reg.update().then(_reload).catch(_reload);
-      } else {
-        clearTimeout(_fallback);
-        _reload();
-      }
-    }).catch(function(){clearTimeout(_fallback);_reload();});
-  } else {
-    clearTimeout(_fallback);
-    _reload();
-  }
+  location.href=location.href;
 };
+function _showUpdateBanner(){
+  var b=document.getElementById('update-banner');
+  if(!b||!b.hidden)return;
+  b.hidden=false;
+  document.getElementById('update-now-btn').onclick=_doUpdate;
+}
 // Version check: compare embedded build stamp against server version.json
-// Works for ALL users regardless of SW state, including those with stale cached HTML
-(function(){var _BV='20260915T1400Z';function _chkVer(){fetch('./version.json?_nc='+Math.floor(Math.random()*1e9),{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){if(d.v&&d.v!==_BV){var b=document.getElementById('update-banner');if(b){b.hidden=false;document.getElementById('update-now-btn').onclick=_doUpdate;}}}).catch(function(){});}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',_chkVer);}else{_chkVer();}})();
+(function(){var _BV='20260915T1600Z';function _chkVer(){fetch('./version.json?_nc='+Math.floor(Math.random()*1e9),{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){if(d.v&&d.v!==_BV)_showUpdateBanner();}).catch(function(){});}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',_chkVer);}else{_chkVer();}})();
 if('serviceWorker'in navigator){
-  var _swRefreshing=false;
-  function _showUpdateBanner(worker){
-    var b=document.getElementById('update-banner');
-    if(!b)return;
-    b.hidden=false;
-    document.getElementById('update-now-btn').onclick=_doUpdate;
-  }
   navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'}).then(function(reg){
     reg.update();
-    // New SW already waiting (installed on a previous visit)
-    if(reg.waiting)_showUpdateBanner(reg.waiting);
-    // New SW installs during this session
+    // SW already waiting from a previous session → show banner
+    if(reg.waiting)_showUpdateBanner();
     reg.addEventListener('updatefound',function(){
       var nw=reg.installing;
       nw.addEventListener('statechange',function(){
-        if(nw.state==='installed'&&navigator.serviceWorker.controller){
-          _showUpdateBanner(nw);
-        }
+        // New SW installed but this page was already loaded → show banner, wait for user click
+        if(nw.state==='installed'&&navigator.serviceWorker.controller)_showUpdateBanner();
       });
     });
   }).catch(function(){});
-  // When the new SW takes control, reload to get fresh HTML
-  navigator.serviceWorker.addEventListener('controllerchange',function(){
-    if(!_swRefreshing){
-      _swRefreshing=true;
-      var b=document.getElementById('update-banner');
-      if(b)b.hidden=true;
-      location.href=location.href;
-    }
-  });
-  // SW broadcasts SW_ACTIVATED when it claims clients — also triggers reload
+  // SW_ACTIVATED: new SW has activated and claimed all clients.
+  // Show banner so user sees the prompt — do NOT auto-reload here.
   navigator.serviceWorker.addEventListener('message',function(evt){
-    if(evt.data&&evt.data.type==='SW_ACTIVATED'&&!_swRefreshing){
-      _swRefreshing=true;
-      location.href=location.href;
-    }
+    if(evt.data&&evt.data.type==='SW_ACTIVATED')_showUpdateBanner();
   });
+  // controllerchange: new SW is now controlling this page.
+  // Just show the banner; user clicks "Update Now" to actually reload.
+  navigator.serviceWorker.addEventListener('controllerchange',function(){_showUpdateBanner();});
 }
 
 // ── Native health bridge detection ──
