@@ -40,7 +40,7 @@ jobs:
           FAIL=0
           [ "$HTML_STAMP" = "$JSON_STAMP" ] || { echo "FAIL: HTML stamp != version.json"; FAIL=1; }
           [ "$SW_STAMP"   = "$JSON_STAMP" ] || { echo "FAIL: sw.js BUILD stamp != version.json"; FAIL=1; }
-          [ "$CACHE_STAMP"= "$JSON_STAMP" ] || { echo "FAIL: sw.js CACHE_NAME stamp != version.json"; FAIL=1; }
+          [ "$CACHE_STAMP" = "$JSON_STAMP" ] || { echo "FAIL: sw.js CACHE_NAME stamp != version.json"; FAIL=1; }
           [ $FAIL -eq 0 ] && echo "OK: all stamps match $JSON_STAMP"
           exit $FAIL
 
