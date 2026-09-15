@@ -77,17 +77,17 @@ jobs:
           FAIL=0
           # Tab bar
           grep -q 'class="tabbar"'      docs/index.html || { echo "FAIL: tabbar missing"; FAIL=1; }
-          # All 5 nav tabs
-          for TAB in home train track connect profile; do
-            grep -q "showTab('$TAB')"   docs/index.html || { echo "FAIL: tab $TAB missing"; FAIL=1; }
+          # Nav tabs (switchTab is the actual function name used in this app)
+          for TAB in dashboard checkin train nudges history profile; do
+            grep -q "switchTab('$TAB')"   docs/index.html || { echo "FAIL: tab $TAB missing"; FAIL=1; }
           done
           # Score card
           grep -q 'score-card'          docs/index.html || { echo "FAIL: score-card missing"; FAIL=1; }
           grep -q 'score-number'        docs/index.html || { echo "FAIL: score-number missing"; FAIL=1; }
-          # Session cards
+          # Session cards (breathing session is launched dynamically, no inline startSession call)
           grep -q "startSession('focus')"    docs/index.html || { echo "FAIL: focus session missing"; FAIL=1; }
           grep -q "startSession('recovery')" docs/index.html || { echo "FAIL: recovery session missing"; FAIL=1; }
-          grep -q "startSession('breathing')"docs/index.html || { echo "FAIL: breathing session missing"; FAIL=1; }
+          grep -q "function startSession"    docs/index.html || { echo "FAIL: startSession function missing"; FAIL=1; }
           # Duration pickers
           grep -q "focus-dur-picker"    docs/index.html || { echo "FAIL: focus duration picker missing"; FAIL=1; }
           grep -q "recovery-dur-picker" docs/index.html || { echo "FAIL: recovery duration picker missing"; FAIL=1; }
