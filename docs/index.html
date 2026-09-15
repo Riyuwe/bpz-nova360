@@ -81,7 +81,8 @@ body {
 }
 @media (max-width: 480px) {
   body { padding: 0; }
-  .device { border-radius: 0; min-height: 100vh; box-shadow: none; }
+  html, body { height: 100%; }
+  .device { border-radius: 0; height: 100%; min-height: unset; box-shadow: none; }
 }
 
 /* ── Screen ── */
@@ -97,8 +98,7 @@ body {
 
 /* ── Tab Bar ── */
 .tabbar {
-  position: sticky;
-  bottom: 0;
+  position: relative;
   width: 100%;
   height: var(--tab-h);
   background: var(--surface);
@@ -134,7 +134,7 @@ body {
 .section-gap { padding: 20px; }
 
 /* ── Screen header ── */
-.screen-head { padding: 24px 20px 16px; }
+.screen-head { padding: max(24px, calc(env(safe-area-inset-top, 0px) + 8px)) 20px 16px; }
 .screen-head h1 { font-family: 'Space Grotesk', sans-serif; font-size: 26px; font-weight: 700; }
 .screen-head p { font-size: 13px; color: var(--text-2); margin-top: 3px; }
 
@@ -900,7 +900,7 @@ body {
 <body>
 
 <!-- ── PWA Update Banner ──────────────────────────────────────────────────── -->
-<div id="update-banner" hidden style="position:fixed;top:0;left:0;right:0;z-index:99999;display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:#6D28D9;color:#fff;font-family:'Manrope',sans-serif;font-size:14px;font-weight:600;box-shadow:0 2px 12px rgba(0,0,0,.3);gap:12px">
+<div id="update-banner" hidden style="position:fixed;top:0;left:0;right:0;z-index:99999;display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top,0px) + 12px) 20px 12px;background:#6D28D9;color:#fff;font-family:'Manrope',sans-serif;font-size:14px;font-weight:600;box-shadow:0 2px 12px rgba(0,0,0,.3);gap:12px">
   <span>✨ New update available</span>
   <button id="update-now-btn" style="background:#fff;color:#6D28D9;border:none;border-radius:20px;padding:7px 18px;font-family:'Manrope',sans-serif;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">Update Now</button>
 </div>
@@ -3222,6 +3222,9 @@ function setPeriod(key, btn) {
 
 }(window));
 
+// Version check: compare embedded build stamp against server version.json
+// Works for ALL users regardless of SW state, including those with stale cached HTML
+(function(){var _BV='20260915T0835Z';function _chkVer(){fetch('./version.json?_nc='+Math.floor(Math.random()*1e9),{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){if(d.v&&d.v!==_BV){var b=document.getElementById('update-banner');if(b){b.hidden=false;document.getElementById('update-now-btn').onclick=function(){window.location.reload(true);};}}}).catch(function(){});}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',_chkVer);}else{_chkVer();}})();
 if('serviceWorker'in navigator){
   var _swRefreshing=false;
   function _showUpdateBanner(worker){
@@ -3230,6 +3233,7 @@ if('serviceWorker'in navigator){
     b.hidden=false;
     document.getElementById('update-now-btn').onclick=function(){
       worker.postMessage({type:'SKIP_WAITING'});
+      setTimeout(function(){window.location.reload(true);},400);
     };
   }
   navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'}).then(function(reg){
