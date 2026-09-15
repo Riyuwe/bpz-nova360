@@ -1,0 +1,110 @@
+name: PWA Monitor
+
+on:
+  # Run after every deploy to GitHub Pages
+  workflow_run:
+    workflows: ['Deploy to GitHub Pages']
+    types: [completed]
+  # Also run on a schedule to catch drift
+  schedule:
+    - cron: '0 */6 * * *'   # every 6 hours
+  workflow_dispatch:
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    # Only run monitor checks after a successful deploy (or on schedule/manual)
+    if: >
+      github.event_name != 'workflow_run' ||
+      github.event.workflow_run.conclusion == 'success'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # ── 1. Fetch live version.json from GitHub Pages ──────────────────────
+      - name: Fetch live version from GitHub Pages
+        id: live_version
+        run: |
+          PAGES_URL="https://riyuwe.github.io/bpz-nova360"
+          echo "Fetching $PAGES_URL/version.json"
+          LIVE_V=$(curl -sf --max-time 15 "$PAGES_URL/version.json" | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>console.log(JSON.parse(d).v))" 2>/dev/null || echo "FETCH_ERROR")
+          echo "live_v=$LIVE_V" >> $GITHUB_OUTPUT
+          echo "Live version: $LIVE_V"
+
+      # ── 2. Compare live version to repo version ───────────────────────────
+      - name: Compare live vs repo version
+        run: |
+          REPO_V=$(node -e "console.log(require('./docs/version.json').v)")
+          LIVE_V="${{ steps.live_version.outputs.live_v }}"
+          echo "Repo version: $REPO_V"
+          echo "Live version: $LIVE_V"
+          if [ "$LIVE_V" = "FETCH_ERROR" ]; then
+            echo "WARNING: Could not fetch live version.json — GitHub Pages may still be deploying"
+          elif [ "$LIVE_V" != "$REPO_V" ]; then
+            echo "WARNING: Live PWA ($LIVE_V) is behind repo ($REPO_V) — deploy may not have propagated yet"
+          else
+            echo "OK: Live PWA version matches repo ($REPO_V)"
+          fi
+
+      # ── 3. Verify sw.js is live and correct ──────────────────────────────
+      - name: Verify live sw.js stamp
+        run: |
+          PAGES_URL="https://riyuwe.github.io/bpz-nova360"
+          REPO_STAMP=$(grep -oP "// BUILD: \K\S+" docs/sw.js)
+          LIVE_SW=$(curl -sf --max-time 15 "$PAGES_URL/sw.js" 2>/dev/null || echo "FETCH_ERROR")
+          if [ "$LIVE_SW" = "FETCH_ERROR" ]; then
+            echo "WARNING: Could not fetch live sw.js"
+          else
+            LIVE_STAMP=$(echo "$LIVE_SW" | grep -oP "// BUILD: \K\S+" || echo "NOT_FOUND")
+            echo "Repo sw.js stamp: $REPO_STAMP"
+            echo "Live sw.js stamp: $LIVE_STAMP"
+            if [ "$LIVE_STAMP" = "$REPO_STAMP" ]; then
+              echo "OK: Live sw.js matches repo"
+            else
+              echo "WARNING: Live sw.js stamp ($LIVE_STAMP) differs from repo ($REPO_STAMP)"
+            fi
+          fi
+
+      # ── 4. Verify index.html is reachable ────────────────────────────────
+      - name: Verify PWA index.html is reachable
+        run: |
+          PAGES_URL="https://riyuwe.github.io/bpz-nova360"
+          STATUS=$(curl -o /dev/null -s -w "%{http_code}" --max-time 15 "$PAGES_URL/" 2>/dev/null || echo "000")
+          echo "HTTP status for $PAGES_URL/: $STATUS"
+          if [ "$STATUS" = "200" ]; then
+            echo "OK: PWA index.html is reachable (HTTP 200)"
+          else
+            echo "WARNING: PWA returned HTTP $STATUS — may be deploying or unreachable"
+          fi
+
+      # ── 5. Verify manifest.json is reachable ──────────────────────────────
+      - name: Verify PWA manifest.json is reachable
+        run: |
+          PAGES_URL="https://riyuwe.github.io/bpz-nova360"
+          STATUS=$(curl -o /dev/null -s -w "%{http_code}" --max-time 15 "$PAGES_URL/manifest.json" 2>/dev/null || echo "000")
+          echo "HTTP status for manifest.json: $STATUS"
+          [ "$STATUS" = "200" ] && echo "OK: manifest.json reachable" || echo "WARNING: manifest.json returned HTTP $STATUS"
+
+      # ── 6. Repo-level stamp consistency (mirrors qa.yml check) ───────────
+      - name: Confirm repo stamp consistency
+        run: |
+          set -e
+          HTML_STAMP=$(grep -oP "var _BV='\K[^']+" docs/index.html || true)
+          SW_STAMP=$(grep -oP "// BUILD: \K\S+" docs/sw.js || true)
+          JSON_STAMP=$(node -e "console.log(require('./docs/version.json').v)" || true)
+          FAIL=0
+          [ "$HTML_STAMP" = "$JSON_STAMP" ] || { echo "FAIL: HTML _BV ($HTML_STAMP) != version.json ($JSON_STAMP)"; FAIL=1; }
+          [ "$SW_STAMP"   = "$JSON_STAMP" ] || { echo "FAIL: sw.js BUILD ($SW_STAMP) != version.json ($JSON_STAMP)"; FAIL=1; }
+          [ $FAIL -eq 0 ] && echo "OK: repo stamps consistent at $JSON_STAMP"
+          exit $FAIL
+
+      - name: Monitor Summary
+        if: success()
+        run: |
+          echo "PWA monitor checks complete."
+          echo "Live site: https://riyuwe.github.io/bpz-nova360"
+          echo "Repo version: $(node -e "console.log(require('./docs/version.json').v)")"

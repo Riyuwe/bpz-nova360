@@ -1,0 +1,192 @@
+name: PWA QA
+
+on:
+  push:
+    branches: [main]
+    paths: ['docs/**']
+  pull_request:
+    branches: [main]
+    paths: ['docs/**']
+  workflow_dispatch:
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install --save-dev htmlhint
+
+      # ── 1. Version stamp consistency ──────────────────────────────────────
+      - name: Check version stamp consistency
+        run: |
+          set -e
+          HTML_STAMP=$(grep -oP "var _BV='\K[^']+" docs/index.html || true)
+          SW_STAMP=$(grep -oP "// BUILD: \K\S+" docs/sw.js || true)
+          CACHE_STAMP=$(grep -oP "nova360-v3-\K[^']+" docs/sw.js | head -1 || true)
+          JSON_STAMP=$(node -e "console.log(require('./docs/version.json').v)" || true)
+
+          echo "HTML _BV:       $HTML_STAMP"
+          echo "SW BUILD:       $SW_STAMP"
+          echo "SW CACHE_NAME:  $CACHE_STAMP"
+          echo "version.json:   $JSON_STAMP"
+
+          FAIL=0
+          [ "$HTML_STAMP" = "$JSON_STAMP" ] || { echo "FAIL: HTML stamp != version.json"; FAIL=1; }
+          [ "$SW_STAMP"   = "$JSON_STAMP" ] || { echo "FAIL: sw.js BUILD stamp != version.json"; FAIL=1; }
+          [ "$CACHE_STAMP"= "$JSON_STAMP" ] || { echo "FAIL: sw.js CACHE_NAME stamp != version.json"; FAIL=1; }
+          [ $FAIL -eq 0 ] && echo "OK: all stamps match $JSON_STAMP"
+          exit $FAIL
+
+      # ── 2. SW mandatory events ────────────────────────────────────────────
+      - name: Check service worker completeness
+        run: |
+          set -e
+          FAIL=0
+          grep -q "skipWaiting()" docs/sw.js        || { echo "FAIL: skipWaiting() missing from sw.js"; FAIL=1; }
+          grep -q "SW_ACTIVATED"  docs/sw.js        || { echo "FAIL: SW_ACTIVATED broadcast missing"; FAIL=1; }
+          grep -q "clients.claim" docs/sw.js        || { echo "FAIL: clients.claim() missing"; FAIL=1; }
+          grep -q "networkFirst"  docs/sw.js        || { echo "FAIL: networkFirst strategy missing"; FAIL=1; }
+          grep -q "cacheFirst"    docs/sw.js        || { echo "FAIL: cacheFirst strategy missing"; FAIL=1; }
+          grep -q "SKIP_WAITING"  docs/sw.js        || { echo "FAIL: SKIP_WAITING message handler missing"; FAIL=1; }
+          [ $FAIL -eq 0 ] && echo "OK: service worker has all required handlers"
+          exit $FAIL
+
+      # ── 3. Update banner wiring ───────────────────────────────────────────
+      - name: Check update banner wiring
+        run: |
+          set -e
+          FAIL=0
+          grep -q "SW_ACTIVATED"        docs/index.html || { echo "FAIL: SW_ACTIVATED listener missing in index.html"; FAIL=1; }
+          grep -q "location.href"       docs/index.html || { echo "FAIL: location.href reload missing in index.html"; FAIL=1; }
+          grep -q "_doUpdate"           docs/index.html || { echo "FAIL: _doUpdate function missing"; FAIL=1; }
+          grep -q "update-banner"       docs/index.html || { echo "FAIL: update-banner element missing"; FAIL=1; }
+          [ $FAIL -eq 0 ] && echo "OK: update banner correctly wired"
+          exit $FAIL
+
+      # ── 4. Critical UI elements ───────────────────────────────────────────
+      - name: Check critical UI elements
+        run: |
+          set -e
+          FAIL=0
+          # Tab bar
+          grep -q 'class="tabbar"'      docs/index.html || { echo "FAIL: tabbar missing"; FAIL=1; }
+          # All 5 nav tabs
+          for TAB in home train track connect profile; do
+            grep -q "showTab('$TAB')"   docs/index.html || { echo "FAIL: tab $TAB missing"; FAIL=1; }
+          done
+          # Score card
+          grep -q 'score-card'          docs/index.html || { echo "FAIL: score-card missing"; FAIL=1; }
+          grep -q 'score-number'        docs/index.html || { echo "FAIL: score-number missing"; FAIL=1; }
+          # Session cards
+          grep -q "startSession('focus')"    docs/index.html || { echo "FAIL: focus session missing"; FAIL=1; }
+          grep -q "startSession('recovery')" docs/index.html || { echo "FAIL: recovery session missing"; FAIL=1; }
+          grep -q "startSession('breathing')"docs/index.html || { echo "FAIL: breathing session missing"; FAIL=1; }
+          # Duration pickers
+          grep -q "focus-dur-picker"    docs/index.html || { echo "FAIL: focus duration picker missing"; FAIL=1; }
+          grep -q "recovery-dur-picker" docs/index.html || { echo "FAIL: recovery duration picker missing"; FAIL=1; }
+          # Connect modal
+          grep -q 'connect-modal'       docs/index.html || { echo "FAIL: connect-modal missing"; FAIL=1; }
+          grep -q 'cmo-footer'          docs/index.html || { echo "FAIL: cmo-footer missing"; FAIL=1; }
+          [ $FAIL -eq 0 ] && echo "OK: all critical UI elements present"
+          exit $FAIL
+
+      # ── 5. Session content uniqueness ─────────────────────────────────────
+      - name: Check session content uniqueness
+        run: |
+          set -e
+          FAIL=0
+          # Focus card must NOT contain "Heart Coherence" text
+          if grep -A 30 "focus-dur-picker" docs/index.html | grep -qi "heart coherence"; then
+            echo "FAIL: Focus card contains Heart Coherence content (wrong session)"
+            FAIL=1
+          fi
+          # Recovery must NOT be identical to Focus
+          FOCUS_DESC=$(grep -A 5 "focus-dur-picker" docs/index.html | head -20 | md5sum)
+          RECOVERY_DESC=$(grep -A 5 "recovery-dur-picker" docs/index.html | head -20 | md5sum)
+          [ "$FOCUS_DESC" != "$RECOVERY_DESC" ] || { echo "FAIL: Focus and Recovery session content appears identical"; FAIL=1; }
+          [ $FAIL -eq 0 ] && echo "OK: session content is unique per session type"
+          exit $FAIL
+
+      # ── 6. CSS overflow / clip checks ─────────────────────────────────────
+      - name: Check score-card overflow
+        run: |
+          set -e
+          # score-card must NOT have overflow: hidden (clips the "99" score)
+          if node -e "
+            const fs = require('fs');
+            const html = fs.readFileSync('docs/index.html', 'utf8');
+            const scoreCardBlock = html.match(/\.score-card\s*\{[^}]+\}/g) || [];
+            const hasClip = scoreCardBlock.some(b => b.includes('overflow') && b.includes('hidden'));
+            if (hasClip) { console.error('FAIL: .score-card has overflow:hidden — clips the 99 score'); process.exit(1); }
+            console.log('OK: .score-card does not clip score content');
+          "; then
+            true
+          else
+            exit 1
+          fi
+
+      # ── 7. Tab bar height sanity ──────────────────────────────────────────
+      - name: Check tab bar height
+        run: |
+          node -e "
+            const fs = require('fs');
+            const html = fs.readFileSync('docs/index.html', 'utf8');
+            const m = html.match(/--tab-h:\s*(\d+)px/);
+            if (!m) { console.error('FAIL: --tab-h CSS variable not found'); process.exit(1); }
+            const h = parseInt(m[1]);
+            if (h > 64) { console.error('FAIL: --tab-h=' + h + 'px is too large (>64px causes white gap below tabs)'); process.exit(1); }
+            console.log('OK: --tab-h=' + h + 'px is within acceptable range');
+          "
+
+      # ── 8. Connect modal positioning ─────────────────────────────────────
+      - name: Check connect modal does not cover tab bar
+        run: |
+          node -e "
+            const fs = require('fs');
+            const html = fs.readFileSync('docs/index.html', 'utf8');
+            // Inset:0 on connect-modal would cover the tabbar
+            const m = html.match(/\.connect-modal\s*\{([^}]+)\}/);
+            if (m && /\binset\s*:\s*0/.test(m[1])) {
+              console.error('FAIL: .connect-modal uses inset:0 which hides the tab bar');
+              process.exit(1);
+            }
+            console.log('OK: connect-modal positioning does not cover tab bar');
+          "
+
+      # ── 9. No credentials in source ──────────────────────────────────────
+      - name: Check no credentials in source
+        run: |
+          set -e
+          FAIL=0
+          # These specific credentials must never be hardcoded
+          if grep -r "devstylist2022" docs/ 2>/dev/null | grep -v ".env"; then
+            echo "FAIL: Hardcoded password found in docs/"
+            FAIL=1
+          fi
+          [ $FAIL -eq 0 ] && echo "OK: no hardcoded credentials detected"
+          exit $FAIL
+
+      # ── 10. manifest.json validity ───────────────────────────────────────
+      - name: Validate manifest.json
+        run: |
+          node -e "
+            const fs = require('fs');
+            try {
+              const m = JSON.parse(fs.readFileSync('docs/manifest.json', 'utf8'));
+              const required = ['name', 'short_name', 'icons', 'start_url', 'display'];
+              const missing = required.filter(k => !m[k]);
+              if (missing.length) { console.error('FAIL: manifest missing:', missing.join(', ')); process.exit(1); }
+              console.log('OK: manifest.json is valid');
+            } catch(e) { console.error('FAIL: manifest.json parse error:', e.message); process.exit(1); }
+          "
+
+      - name: QA Summary
+        if: success()
+        run: echo "All QA checks passed ✓"
