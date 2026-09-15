@@ -893,6 +893,9 @@ body {
 .provider-card { box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
 .connect-btn { font-size: 14px; letter-spacing: 0.2px; }
 </style>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
 </head>
 <body>
 <div class="device">
@@ -3212,7 +3215,7 @@ function setPeriod(key, btn) {
 
 }(window));
 
-if('serviceWorker'in navigator){navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(function(){});}
+if('serviceWorker'in navigator){navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'}).then(function(reg){reg.update();}).catch(function(){});var _swRefreshing=false;navigator.serviceWorker.addEventListener('controllerchange',function(){if(!_swRefreshing){_swRefreshing=true;window.location.reload();}});navigator.serviceWorker.addEventListener('message',function(e){if(e.data&&e.data.type==='SW_UPDATED'&&!_swRefreshing){_swRefreshing=true;window.location.reload();}});}
 
 // ── Native health bridge detection ──
 // iOS WKWebView: exposes window.webkit.messageHandlers.nova360HealthKit

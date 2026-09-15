@@ -1,82 +1,75 @@
-const CACHE_NAME = 'nova360-v2';
-const PRECACHE_URLS = ['./'];
+// BUILD: 20260915T0821Z
+const CACHE_NAME = 'nova360-v3-20260915T0821Z';
+const SHELL_URLS = ['./', './manifest.json', './icon.svg'];
 
-// ---------------------------------------------------------------------------
-// Install – pre-cache shell assets then activate immediately
-// ---------------------------------------------------------------------------
+// Install – pre-cache shell then activate immediately
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches
-      .open(CACHE_NAME)
-      .then((cache) => cache.addAll(PRECACHE_URLS))
+    caches.open(CACHE_NAME)
+      .then((cache) => cache.addAll(SHELL_URLS))
       .then(() => self.skipWaiting())
   );
 });
 
-// ---------------------------------------------------------------------------
-// Activate – remove stale caches then take control of all clients
-// ---------------------------------------------------------------------------
+// Activate – delete all old caches, claim clients, notify them to reload
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches
-      .keys()
+    caches.keys()
       .then((keys) =>
-        Promise.all(
-          keys
-            .filter((key) => key !== CACHE_NAME)
-            .map((key) => caches.delete(key))
-        )
+        Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
       )
       .then(() => self.clients.claim())
+      .then(() =>
+        self.clients.matchAll({ includeUncontrolled: true }).then((clients) =>
+          clients.forEach((c) => c.postMessage({ type: 'SW_UPDATED' }))
+        )
+      )
   );
 });
 
-// ---------------------------------------------------------------------------
-// Fetch – cache-first strategy with navigation fallback
-// ---------------------------------------------------------------------------
+// Fetch – network-first for HTML navigation, cache-first for static assets
 self.addEventListener('fetch', (event) => {
   const { request } = event;
-
-  // Only handle GET requests
   if (request.method !== 'GET') return;
-
   const url = new URL(request.url);
-
-  // Skip non-HTTP(S) schemes (e.g. chrome-extension://, data:, blob:)
   if (!url.protocol.startsWith('http')) return;
 
-  event.respondWith(handleFetch(request));
+  // Navigation requests (the HTML page itself) → always try network first
+  // so users receive new deployments immediately
+  if (request.mode === 'navigate') {
+    event.respondWith(networkFirst(request));
+    return;
+  }
+
+  event.respondWith(cacheFirst(request));
 });
 
-async function handleFetch(request) {
-  // 1. Try the cache first
-  const cachedResponse = await caches.match(request);
-  if (cachedResponse) return cachedResponse;
-
-  // 2. Cache miss – go to the network
+async function networkFirst(request) {
   try {
-    const networkResponse = await fetch(request);
-
-    // Only cache valid, non-opaque responses (status 200, same-origin or
-    // CORS responses with explicit headers).  Opaque responses (status 0)
-    // are unpredictable and can bloat the cache with error pages.
-    if (networkResponse.status === 200 && networkResponse.type !== 'opaque') {
+    const res = await fetch(request);
+    if (res.status === 200) {
       const cache = await caches.open(CACHE_NAME);
-      // Clone before consuming – a Response body can only be read once
-      cache.put(request, networkResponse.clone());
+      cache.put(request, res.clone());
     }
+    return res;
+  } catch (_) {
+    const cached = await caches.match(request) || await caches.match('./');
+    if (cached) return cached;
+    throw _;
+  }
+}
 
-    return networkResponse;
-  } catch (err) {
-    // 3. Network failure – for navigation requests fall back to the cached
-    //    app shell so the user sees something meaningful offline
-    if (request.mode === 'navigate') {
-      const shell = await caches.match('./');
-      if (shell) return shell;
+async function cacheFirst(request) {
+  const cached = await caches.match(request);
+  if (cached) return cached;
+  try {
+    const res = await fetch(request);
+    if (res.status === 200 && res.type !== 'opaque') {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, res.clone());
     }
-
-    // For all other requests propagate the failure (the browser will show
-    // its own error or the calling code can handle it)
-    throw err;
+    return res;
+  } catch (_) {
+    throw _;
   }
 }
